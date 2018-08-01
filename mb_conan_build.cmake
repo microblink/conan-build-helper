@@ -171,3 +171,8 @@ else() # in user space and user has not performed conan install command
         set(CMAKE_MODULE_PATH ${CONAN_CMAKE_MODULE_PATH_RELEASE} ${CMAKE_MODULE_PATH})
     endif()
 endif()
+
+# if this include fails, then you have forgot to add
+# build_requires = "CMakeBuild/[>=1.1.2,<2.0.0]@microblink/master"
+# to your conanfile.py
+include( common_settings )
