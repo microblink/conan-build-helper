@@ -21,7 +21,7 @@ else() # in user space
        message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
        file( DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.12/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake" SHOW_PROGRESS )
     endif()
-    include( conan.cmake )
+    include( ${CMAKE_BINARY_DIR}/conan.cmake )
 
     set( conan_cmake_run_params BASIC_SETUP CMAKE_TARGETS )
     if( IOS )
