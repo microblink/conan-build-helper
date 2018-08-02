@@ -16,6 +16,7 @@ class MicroblinkConanFile(ConanFile):
         self.copy("*.hpp", dst="include", src="Source")
         self.copy("*.lib", dst="lib", keep_path=False)
         self.copy("*.a", dst="lib", keep_path=False)
+        self.copy("*.pdb", dst="lib", keep_path=False)
 
 
     def build_id(self):
