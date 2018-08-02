@@ -1,9 +1,9 @@
 from conans import ConanFile
-from microblink import CMake
 
 
 class MicroblinkConanFile(ConanFile):
     def build(self):
+        from microblink import CMake
         cmake = CMake(self, build_type = 'Release') # always build release, whether full release or dev-release (in debug mode)
         args = []
         if self.settings.build_type == 'Debug':
