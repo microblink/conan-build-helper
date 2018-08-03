@@ -77,7 +77,7 @@ else() # in user space and user has not performed conan install command
             message( STATUS "CONAN_CMAKE_MULTI: ${CONAN_CMAKE_MULTI}, MB_DEV_RELEASE: ${MB_DEV_RELEASE}")
             if(CONAN_CMAKE_MULTI AND NOT MB_DEV_RELEASE)
                 foreach(build_type "Release" "Debug")
-                    set( CONAN_INVOCATION conan install ${CONANFILE} ${settings} -g cmake_multi ${CONAN_OPTIONS} -s build_type=${build_type} )
+                    set( CONAN_INVOCATION conan install ${CONANFILE} ${settings} -g cmake_multi ${CONAN_OPTIONS} -s build_type=${build_type} --build=missing )
                     string (REPLACE ";" " " _CONAN_INVOCATION "${CONAN_INVOCATION}")
                     message( STATUS "Conan executing: ${_CONAN_INVOCATION}" )
                     execute_process(
@@ -97,7 +97,7 @@ else() # in user space and user has not performed conan install command
                 if( MB_DEV_RELEASE )
                     set( invocation_build_type "Debug" )
                 endif()
-                set( CONAN_INVOCATION conan install ${CONANFILE} ${settings} -g cmake ${CONAN_OPTIONS} -s build_type=${invocation_build_type} )
+                set( CONAN_INVOCATION conan install ${CONANFILE} ${settings} -g cmake ${CONAN_OPTIONS} -s build_type=${invocation_build_type} --build=missing )
                 string (REPLACE ";" " " _CONAN_INVOCATION "${CONAN_INVOCATION}")
                 message( STATUS "Conan executing: ${_CONAN_INVOCATION}" )
                 execute_process(
