@@ -157,6 +157,12 @@ else() # in user space and user has not performed conan install command
         list( APPEND conan_cmake_run_params PROFILE ios )
     elseif( ANDROID )
         list( APPEND conan_cmake_run_params PROFILE android-${ANDROID_ABI} )
+    elseif( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
+        if( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" )
+            list( APPEND conan_cmake_run_params PROFILE clang )
+        else()
+            list( APPEND conan_cmake_run_params PROFILE gcc )
+        endif()
     endif()
 
     # other cases should be auto-detected by conan.cmake
