@@ -1,4 +1,4 @@
-from conans import ConanFile
+from conans import ConanFile, tools
 
 
 class MicroblinkConanFile(ConanFile):
@@ -33,7 +33,7 @@ class MicroblinkConanFile(ConanFile):
             self.info.settings.arch = "All"
 
     def package_info(self):
-        if self.settings.build_type == 'Debug' and (self.settings.compiler == 'clang' or self.settings.compiler == 'apple-clang'):
+        if self.settings.build_type == 'Debug' and not tools.cross_building(self.settings) and (self.settings.compiler == 'clang' or self.settings.compiler == 'apple-clang'):
             # runtime checks are enabled, so we need to add ASAN/UBSAN linker flags
             runtime_check_flags = [ '-fsanitize=undefined', '-fsanitize=address']
             if self.settings.compiler == 'clang':
