@@ -31,3 +31,12 @@ class MicroblinkConanFile(ConanFile):
         # Apple has fat libraries, so no need for having separate packages
         if self.settings.os == 'iOS':
             self.info.settings.arch = "All"
+
+    def package_info(self):
+        if self.settings.build_type == 'Debug' and (self.settings.compiler == 'clang' or self.settings.compiler == 'apple-clang'):
+            # runtime checks are enabled, so we need to add ASAN/UBSAN linker flags
+            runtime_check_flags = [ '-fsanitize=undefined', '-fsanitize=address']
+            if self.settings.compiler == 'clang':
+                runtime_check_flags.append('-fsanitize=integer')
+            self.cpp_info.sharedlinkflags.extend(runtime_check_flags)
+            self.cpp_info.exelinkflags.extend(runtime_check_flags)
