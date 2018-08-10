@@ -33,11 +33,11 @@ else() # in user space and user has not performed conan install command
     endif()
 
     # Download automatically, you can also just copy the conan.cmake file
-    if( NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/conan.cmake" )
+    if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
        message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
-       file( DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.12/conan.cmake" "${CMAKE_CURRENT_BINARY_DIR}/conan.cmake" )
+       file( DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.12/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake" )
     endif()
-    include( ${CMAKE_CURRENT_BINARY_DIR}/conan.cmake )
+    include( ${CMAKE_BINARY_DIR}/conan.cmake )
 
     set( conan_cmake_run_params BASIC_SETUP )
     if( IOS )
