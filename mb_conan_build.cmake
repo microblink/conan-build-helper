@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-include_guard()
-
 # in order to be able to detect AppleClang, as opposed to Clang, we need to set this policy
 cmake_policy( SET CMP0025 NEW )
 
