@@ -14,9 +14,16 @@ class MicroblinkConanFile(ConanFile):
 
     def package(self):
         self.copy("*.hpp", dst="include", src="Source")
-        self.copy("*.lib", dst="lib", keep_path=False)
-        self.copy("*.a", dst="lib", keep_path=False)
-        self.copy("*.pdb", dst="lib", keep_path=False)
+
+        if self.settings.os == 'Windows':
+            self.copy("*.lib", dst="lib", keep_path=False)
+            self.copy("*.pdb", dst="lib", keep_path=False)
+
+        if self.settings.os == 'iOS':
+            # copy fat libraries
+            self.copy("*/Release/*.a", dst="lib", keep_path=False)
+        else:
+            self.copy("*.a", dst="lib", keep_path=False)
 
 
     def build_id(self):
