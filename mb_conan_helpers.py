@@ -39,6 +39,7 @@ class MicroblinkConanFile(ConanFile):
         if self.settings.os == 'iOS':
             self.info.settings.arch = "All"
 
+
     def package_info(self):
         if self.settings.build_type == 'Debug' and not tools.cross_building(self.settings) and (self.settings.compiler == 'clang' or self.settings.compiler == 'apple-clang'):
             # runtime checks are enabled, so we need to add ASAN/UBSAN linker flags
