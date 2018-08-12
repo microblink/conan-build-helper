@@ -14,7 +14,7 @@ if( CONAN_EXPORTED OR EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cm
     else()
         include( ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake )
     endif()
-    set( basic_setup_params )
+    set( basic_setup_params TARGETS )
     if( IOS )
         list( APPEND basic_setup_params NO_OUTPUT_DIRS )
     endif()
