@@ -39,6 +39,11 @@ class MicroblinkConanFile(ConanFile):
         if self.settings.os == 'iOS':
             self.info.settings.arch = "All"
 
+        # Sett all 'requires' dependencies to 'full package mode', i.e. whenever
+        # anything in those dependencies change, this package needs to be rebuilt
+        for r in self.requires:
+            self.info.requires[r].full_package_mode()
+
 
     def package_info(self):
         if self.settings.build_type == 'Debug' and not tools.cross_building(self.settings) and (self.settings.compiler == 'clang' or self.settings.compiler == 'apple-clang'):
