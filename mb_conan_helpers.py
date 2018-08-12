@@ -2,18 +2,22 @@ from conans import ConanFile, tools
 
 
 class MicroblinkConanFile(ConanFile):
-    def build(self):
+
+    def build_with_args(self, args):
         from microblink import CMake
         cmake = CMake(self, build_type = 'Release') # always build release, whether full release or dev-release (in debug mode)
-        args = []
         if self.settings.build_type == 'Debug':
-            args = ['-DCMAKE_BUILD_TYPE=Release', '-DMB_DEV_RELEASE=ON']
+            args.extend(['-DCMAKE_BUILD_TYPE=Release', '-DMB_DEV_RELEASE=ON'])
             # runtime checks on Android require rooted device, and on iOS special
             # checkbox enabled that we currently do not support setting via CMake
             if self.settings.os != 'iOS' and self.settings.os != 'Android':
                 args.append('-DMB_ENABLE_RUNTIME_CHECKS=ON')
         cmake.configure(args = args)
         cmake.build()
+
+
+    def build(self):
+        self.build_with_args([])
 
 
     def package(self):
