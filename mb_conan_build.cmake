@@ -39,7 +39,7 @@ else() # in user space and user has not performed conan install command
     endif()
     include( ${CMAKE_BINARY_DIR}/conan.cmake )
 
-    set( conan_cmake_run_params BASIC_SETUP )
+    set( conan_cmake_run_params BASIC_SETUP CMAKE_TARGETS )
     if( IOS )
         list( APPEND conan_cmake_run_params NO_OUTPUT_DIRS )
     endif()
