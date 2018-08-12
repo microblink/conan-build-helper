@@ -17,7 +17,7 @@ class MicroblinkConanFile(ConanFile):
 
 
     def package(self):
-        self.copy("*.hpp", dst="include", src="Source")
+        self.copy("*.hpp", dst="include", src=f"{self.name}/Source")
 
         if self.settings.os == 'Windows':
             self.copy("*.lib", dst="lib", keep_path=False)
