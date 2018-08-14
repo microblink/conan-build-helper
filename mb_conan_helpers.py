@@ -2,6 +2,11 @@ from conans import ConanFile, tools
 
 
 class MicroblinkConanFile(ConanFile):
+    options = {
+        'log_level' : ['Verbose', 'Debug', 'Info', 'WarningsAndErrors'],
+        'enable_timer': [True, False]
+    }
+    default_options = 'log_level=WarningsAndErrors', 'enable_timer=False'
 
     def build_with_args(self, args):
         from microblink import CMake
@@ -12,6 +17,19 @@ class MicroblinkConanFile(ConanFile):
             # checkbox enabled that we currently do not support setting via CMake
             if self.settings.os != 'iOS' and self.settings.os != 'Android':
                 args.append('-DMB_ENABLE_RUNTIME_CHECKS=ON')
+
+        if self.options.log_level == 'Verbose':
+            args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_VERBOSE')
+        elif self.options.log_level == 'Debug':
+            args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_DEBUG')
+        elif self.options.log_level == 'Info':
+            args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_INFO')
+        elif self.options.log_level == 'WarningsAndErrors':
+            args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_WARNINGS_AND_ERRORS')
+
+        if self.options.enable_timer:
+            args.append('-DMB_GLOBAL_ENABLE_TIMER=ON')
+
         cmake.configure(args = args)
         cmake.build()
 
