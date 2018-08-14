@@ -6,7 +6,7 @@ cmake_policy( SET CMP0025 NEW )
 enable_language( C CXX  )
 
 # in conan local cache or user has already performed conan install command
-if( CONAN_EXPORTED OR EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake OR EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake )
+if( CONAN_EXPORTED )
     # standard conan installation, deps will be defined in conanfile.py
     # and not necessary to call conan again, conan is already running
     if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo_multi.cmake )
