@@ -163,6 +163,10 @@ else() # in user space and user has not performed conan install command
         endif()
     endif()
 
+    if( MB_CONAN_SETUP_PARAMS )
+        list( APPEND conan_cmake_run_params ${MB_CONAN_SETUP_PARAMS} )
+    endif()
+
     # other cases should be auto-detected by conan.cmake
 
     # Make sure to use conanfile.py to define dependencies, to stay consistent
