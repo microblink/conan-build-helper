@@ -21,6 +21,10 @@ if( CONAN_EXPORTED )
     conan_basic_setup( ${basic_setup_params} )
 else() # in user space and user has not performed conan install command
 
+    if( MB_JENKINS_BUILD AND ANDROID AND NOT MB_NO_LOG_DEPENDENCY )
+        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "LogAndTimer:redirect_to_stdout=True" )
+    endif()
+
     if( CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE )
         set( CONAN_CMAKE_MULTI ON )
     else()
