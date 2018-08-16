@@ -42,9 +42,11 @@ class MicroblinkConanFile(ConanFile):
         self.build_with_args([])
 
 
-    def package(self):
-        self.copy("*.hpp", dst="include", src=f"{self.name}/Source")
+    def package_all_headers(self):
+        self.copy("*.h*", dst="include", src=f"{self.name}/Source")
 
+
+    def package_all_libraries(self):
         if self.settings.os == 'Windows':
             self.copy("*.lib", dst="lib", keep_path=False)
             self.copy("*.pdb", dst="lib", keep_path=False)
@@ -54,6 +56,11 @@ class MicroblinkConanFile(ConanFile):
             self.copy("*Release/*.a", dst="lib", keep_path=False)
         else:
             self.copy("*.a", dst="lib", keep_path=False)
+
+
+    def package(self):
+        self.package_all_headers()
+        self.package_all_libraries()
 
 
     def build_id(self):
