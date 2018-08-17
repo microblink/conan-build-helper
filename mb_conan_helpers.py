@@ -7,6 +7,7 @@ class MicroblinkConanFile(ConanFile):
         'enable_timer': [True, False]
     }
     default_options = 'log_level=WarningsAndErrors', 'enable_timer=False'
+    exports = 'mb_conan_helpers.py'
 
 
     def add_base_args(self, args):
