@@ -82,7 +82,7 @@ class MicroblinkConanFile(ConanFile):
         # The exception is CMakeBuild, for which we know that will follow the
         # semantic versioning
         for r in self.requires:
-            if r == 'CMakeBuild':
+            if r == 'CMakeBuild' or r == 'VersionAndPaths' or r == 'GTest':
                 self.info.requires[r].semver_mode()
             else:
                 self.info.requires[r].full_package_mode()
