@@ -79,8 +79,13 @@ class MicroblinkConanFile(ConanFile):
 
         # Sett all 'requires' dependencies to 'full package mode', i.e. whenever
         # anything in those dependencies change, this package needs to be rebuilt
+        # The exception is CMakeBuild, for which we know that will follow the
+        # semantic versioning
         for r in self.requires:
-            self.info.requires[r].full_package_mode()
+            if r == 'CMakeBuild':
+                self.info.requires[r].semver_mode()
+            else:
+                self.info.requires[r].full_package_mode()
 
 
     def package_info(self):
