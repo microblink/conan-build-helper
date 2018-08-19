@@ -193,6 +193,6 @@ else() # in user space and user has not performed conan install command
 endif()
 
 # if this include fails, then you have forgot to add
-# build_requires = "CMakeBuild/[>=1.1.2,<2.0.0]@microblink/master"
+# build_requires = "CMakeBuild/<latest-version>@microblink/stable"
 # to your conanfile.py
 include( common_settings )
