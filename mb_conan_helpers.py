@@ -77,14 +77,36 @@ class MicroblinkConanFile(ConanFile):
         if self.settings.os == 'iOS':
             self.info.settings.arch = "All"
 
-        # Sett all 'requires' dependencies to 'full package mode', i.e. whenever
-        # anything in those dependencies change, this package needs to be rebuilt
-        # The exception is CMakeBuild, for which we know that will follow the
-        # semantic versioning
+        # Conan uses semver_mode by default for all dependencies. However,
+        # we want some specific dependencies to be used in full_package mode,
+        # most notably header only libraries.
+        # Dependency user can always override this default behaviour.
+
+        full_package_mode_deps = {
+            'boost',
+            'Eigen',
+            'AndroidNdk',
+            'ConcurrentQueue',
+            'ConfigEx',
+            'Err',
+            'Functionoid',
+            'Pimpl',
+            'RapidJSON',
+            'Sweater',
+            'UTFCpp',
+            'Variant',
+            'OpenCV',
+            'OpenCVCore',
+            'OpenCVAnalysis',
+            'OpenCVGUI',
+            'OpenCVImageIO',
+            'OpenCVProcessing',
+            'OpenCVVideoIO',
+            'Zlib'
+        }
+
         for r in self.requires:
-            if r == 'CMakeBuild' or r == 'VersionAndPaths' or r == 'GTest':
-                self.info.requires[r].semver_mode()
-            else:
+            if r in full_package_mode_deps:
                 self.info.requires[r].full_package_mode()
 
 
