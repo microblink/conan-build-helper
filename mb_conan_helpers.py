@@ -8,6 +8,9 @@ class MicroblinkConanFile(ConanFile):
     }
     default_options = 'log_level=WarningsAndErrors', 'enable_timer=False'
     exports = 'mb_conan_helpers.py'
+    settings = "os", "compiler", "build_type", "arch"
+    generators = "cmake"
+    no_copy_source=True
 
 
     def add_base_args(self, args):
