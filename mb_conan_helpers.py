@@ -75,6 +75,11 @@ class MicroblinkConanFile(ConanFile):
             self.info_build.settings.os.api_level = 16
 
 
+    def imports(self):
+       self.copy("*.dll", "", "bin")
+       self.copy("*.dylib", "", "lib")
+
+
     def package_id(self):
         # Apple has fat libraries, so no need for having separate packages
         if self.settings.os == 'iOS':
