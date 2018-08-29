@@ -16,11 +16,11 @@ Also, ensure that you add `"CMakeBuild/<latest-version>@microblink/stable"` entr
 To use `MicroblinkConanFile`, add this to the beginning of your `conanfile.py`:
 
 ```python
-import os
-from conans import tools
+from conans import tools, CMake, python_requires
 
-if not os.path.exists('mb_conan_helpers.py'):
-    tools.download('https://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_helpers.py', 'mb_conan_helpers.py')
-
-from mb_conan_helpers import MicroblinkConanFile
+base = python_requires('MicroblinkConanFile/<latest-version>@microblink/stable')
 ```
+
+You can search for latest available version of `MicroblinkConanFile` with `conan search -r all MicroblinkConanFile`
+
+**NOTE**: `python_requires` requires Conan v1.7.0 or newer.
