@@ -77,6 +77,7 @@ class MicroblinkConanFile(ConanFile):
     def imports(self):
        self.copy("*.dll", "", "bin")
        self.copy("*.dylib", "", "lib")
+       self.copy("*.zzip", src='res', dst='')
 
 
     def package_id(self):
