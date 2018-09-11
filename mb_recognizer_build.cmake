@@ -3,7 +3,13 @@ set_property( CACHE Recognizer_RESULT_JSONIZATION PROPERTY STRINGS "Off" "Serial
 
 option( Recognizer_BINARY_SERIALIZATION "Enable binary serialization of results and settings" ON )
 
-option( Recognizer_ENABLE_TESTING "Enable RecognizerTests" ON )
+set( TESTING_DEFAULT OFF )
+
+if( NOT CONAN_EXPORTED )
+    set( TESTING_DEFAULT ON )
+endif()
+
+option( Recognizer_ENABLE_TESTING "Enable RecognizerTests" ${TESTING_DEFAULT} )
 
 if( NOT CONAN_EXPORTED )
     list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "result_jsonization=${Recognizer_RESULT_JSONIZATION}" "Protection:all_keys=True" "MVToolset:enable_image_io=True" )
