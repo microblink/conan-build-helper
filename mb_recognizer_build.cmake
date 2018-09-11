@@ -23,6 +23,9 @@ endif()
 include( ${CMAKE_BINARY_DIR}/mb_conan_build.cmake )
 
 macro( print_recognizer_options )
+    include(print_info_main)
+    print_info_main()
+
     print_title( "Recognizer options" )
     print_cache_var( Recognizer_RESULT_JSONIZATION   )
     print_cache_var( Recognizer_BINARY_SERIALIZATION )
