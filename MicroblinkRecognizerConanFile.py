@@ -23,5 +23,13 @@ class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
         self.options['Recognizer'].binary_serialization = self.options.binary_serialization
 
 
+    def common_recognizer_build_args(self):
+        cmake_args = [
+            f'-DRecognizer_RESULT_JSONIZATION={self.options.result_jsonization}',
+            f'-DRecognizer_BINARY_SERIALIZATION={self.options.binary_serialization}'
+        ]
+        return cmake_args
+
+
     def build(self):
         self.build_with_args(self.common_recognizer_build_args())
