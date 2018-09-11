@@ -11,10 +11,11 @@ class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
 
 
     def config_options(self):
-        if self.settings.os == 'Android':
-            self.options.binary_serialization = True
-        else:
-            self.options.binary_serialization = False
+        if self.options.binary_serialization == None:
+            if self.settings.os == 'Android':
+                self.options.binary_serialization = True
+            else:
+                self.options.binary_serialization = False
 
 
     def configure(self):
