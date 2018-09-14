@@ -11,13 +11,23 @@ endif()
 
 option( Recognizer_ENABLE_TESTING "Enable RecognizerTests" ${TESTING_DEFAULT} )
 
+option( Recognizer_ENABLE_IMSHOW "Enable imshow" OFF )
+
 if( NOT CONAN_EXPORTED )
     list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "result_jsonization=${Recognizer_RESULT_JSONIZATION}" "Protection:all_keys=True" "MVToolset:enable_image_io=True" )
     if ( Recognizer_BINARY_SERIALIZATION )
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "binary_serialization=True" )
     endif()
+
+    if ( NOT RECOGNIZER_DEPENDENCY )
+        set( RECOGNIZER_DEPENDENCY "Recognizer" )
+    endif()
+
     if ( Recognizer_ENABLE_TESTING )
-        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "Recognizer:enable_testing=True" )
+        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "${RECOGNIZER_DEPENDENCY}:enable_testing=True" )
+    endif()
+    if ( Recognizer_ENABLE_IMSHOW )
+        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "MVToolset:enable_imshow=True" )
     endif()
 endif()
 
@@ -36,4 +46,5 @@ macro( print_recognizer_options )
     print_cache_var( Recognizer_RESULT_JSONIZATION   )
     print_cache_var( Recognizer_BINARY_SERIALIZATION )
     print_cache_var( Recognizer_ENABLE_TESTING )
+    print_cache_var( Recognizer_ENABLE_IMSHOW )
 endmacro()
