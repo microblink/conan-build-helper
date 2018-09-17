@@ -2,7 +2,7 @@ from conans import python_requires
 
 base = python_requires('MicroblinkRecognizerConanFile/1.0.4@microblink/stable')
 
-class MicroblinkRecognizerConanFile(base.MicroblinkRecognizerConanFile):
+class MicroblinkOcrRecognizerConanFile(base.MicroblinkRecognizerConanFile):
 
     def configure(self):
         self.options['Recognizer'].result_jsonization = self.options.result_jsonization
