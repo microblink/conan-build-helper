@@ -19,12 +19,8 @@ if( NOT CONAN_EXPORTED )
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "binary_serialization=True" )
     endif()
 
-    if ( NOT RECOGNIZER_DEPENDENCY )
-        set( RECOGNIZER_DEPENDENCY "Recognizer" )
-    endif()
-
     if ( Recognizer_ENABLE_TESTING )
-        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "${RECOGNIZER_DEPENDENCY}:enable_testing=True" )
+        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "enable_testing=True" )
     endif()
     if ( Recognizer_ENABLE_IMSHOW )
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "MVToolset:enable_imshow=True" )
