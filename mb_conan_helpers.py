@@ -94,6 +94,7 @@ class MicroblinkConanFile(ConanFile):
             'AndroidNdk',
             'Bit',
             'boost',
+            'BlinkIDUtils'
             'ConcurrentQueue',
             'ConfigEx',
             'Eigen',

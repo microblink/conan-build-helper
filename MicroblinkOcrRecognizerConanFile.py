@@ -1,6 +1,6 @@
 from conans import python_requires
 
-base = python_requires('MicroblinkRecognizerConanFile/1.0.4@microblink/stable')
+base = python_requires('MicroblinkRecognizerConanFile/1.0.5@microblink/stable')
 
 class MicroblinkOcrRecognizerConanFile(base.MicroblinkRecognizerConanFile):
 
