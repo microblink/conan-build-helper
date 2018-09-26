@@ -20,9 +20,9 @@ class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
 
 
     def configure(self):
-        self.options['Recognizer'].result_jsonization = self.options.result_jsonization
-        self.options['Recognizer'].binary_serialization = self.options.binary_serialization
-        self.options['Recognizer'].enable_testing = self.options.enable_testing
+        self.options['*'].result_jsonization = self.options.result_jsonization
+        self.options['*'].binary_serialization = self.options.binary_serialization
+        self.options['*'].enable_testing = self.options.enable_testing
 
 
     def common_recognizer_build_args(self):
