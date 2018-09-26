@@ -13,7 +13,7 @@ class MicroblinkConanFile(ConanFile):
 
 
     def add_base_args(self, args):
-        if self.optionslog_level:
+        if 'log_level' in self.options:
             if self.options.log_level == 'Verbose':
                 args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_VERBOSE')
             elif self.options.log_level == 'Debug':
@@ -23,8 +23,9 @@ class MicroblinkConanFile(ConanFile):
             elif self.options.log_level == 'WarningsAndErrors':
                 args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_WARNINGS_AND_ERRORS')
 
-        if self.options.enable_timer:
-            args.append('-DMB_GLOBAL_ENABLE_TIMER=ON')
+        if 'enable_timer' in self.options:
+            if self.options.enable_timer:
+                args.append('-DMB_GLOBAL_ENABLE_TIMER=ON')
 
 
     def build_with_args(self, args):
@@ -37,6 +38,7 @@ class MicroblinkConanFile(ConanFile):
             if self.settings.os != 'iOS' and self.settings.os != 'Android':
                 args.append('-DMB_ENABLE_RUNTIME_CHECKS=ON')
 
+        self.add_base_args(args)
         cmake.configure(args = args)
         cmake.build()
 
