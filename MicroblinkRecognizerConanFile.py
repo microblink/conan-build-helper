@@ -7,7 +7,7 @@ class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
         'result_jsonization': ['Off', 'Serialization', 'SerializationAndTesting'],
         'binary_serialization': [True, False]
     })
-    default_options = ('result_jsonization=Off') + base.MicroblinkConanFile.default_options
+    default_options = ('result_jsonization=Off',) + base.MicroblinkConanFile.default_options
 
 
     def config_options(self):
