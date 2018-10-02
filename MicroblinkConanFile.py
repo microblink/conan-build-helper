@@ -4,9 +4,10 @@ from conans import ConanFile, tools
 class MicroblinkConanFile(ConanFile):
     options = {
         'log_level' : ['Verbose', 'Debug', 'Info', 'WarningsAndErrors'],
-        'enable_timer': [True, False]
+        'enable_timer': [True, False],
+        'enable_testing': [True, False]
     }
-    default_options = 'log_level=WarningsAndErrors', 'enable_timer=False'
+    default_options = 'log_level=WarningsAndErrors', 'enable_timer=False', 'enable_testing=False'
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
     no_copy_source=True
@@ -26,6 +27,9 @@ class MicroblinkConanFile(ConanFile):
         if 'enable_timer' in self.options:
             if self.options.enable_timer:
                 args.append('-DMB_GLOBAL_ENABLE_TIMER=ON')
+
+        if 'enable_testing' in self.options:
+            args.append(f'-DMB_ENABLE_TESTING={self.options.enable_testing}')
 
 
     def build_with_args(self, args):
@@ -82,7 +86,11 @@ class MicroblinkConanFile(ConanFile):
        self.copy("*.zzip", src='res', dst='')
 
 
-    def package_id(self):
+    def ignore_testing_for_package_id(self):
+        del self.info.options.enable_testing
+
+
+    def common_settings_for_package_id(self):
         # Apple has fat libraries, so no need for having separate packages
         if self.settings.os == 'iOS':
             self.info.settings.arch = "All"
@@ -96,7 +104,6 @@ class MicroblinkConanFile(ConanFile):
             'AndroidNdk',
             'Bit',
             'boost',
-            'BlinkIDUtils'
             'ConcurrentQueue',
             'ConfigEx',
             'Eigen',
@@ -113,6 +120,7 @@ class MicroblinkConanFile(ConanFile):
             'OpenCVVideoIO',
             'Pimpl',
             'RapidJSON',
+            'RecognizerProtection',
             'Sweater',
             'UTFCpp',
             'Variant',
@@ -122,6 +130,11 @@ class MicroblinkConanFile(ConanFile):
         for r in self.requires:
             if r in full_package_mode_deps:
                 self.info.requires[r].full_package_mode()
+
+
+    def package_id(self):
+        self.ignore_testing_for_package_id()
+        self.common_settings_for_package_id()
 
 
     def package_info(self):

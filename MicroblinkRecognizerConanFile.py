@@ -1,14 +1,13 @@
 from conans import python_requires
 
-base = python_requires('MicroblinkConanFile/1.0.5@microblink/stable')
+base = python_requires('MicroblinkConanFile/2.0.0@microblink/stable')
 
 class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
     options = dict(base.MicroblinkConanFile.options, **{
         'result_jsonization': ['Off', 'Serialization', 'SerializationAndTesting'],
-        'binary_serialization': [True, False],
-        'enable_testing': [True, False]
+        'binary_serialization': [True, False]
     })
-    default_options = ('result_jsonization=Off', 'enable_testing=False') + base.MicroblinkConanFile.default_options
+    default_options = ('result_jsonization=Off') + base.MicroblinkConanFile.default_options
 
 
     def config_options(self):
@@ -28,14 +27,17 @@ class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
     def common_recognizer_build_args(self):
         cmake_args = [
             f'-DRecognizer_RESULT_JSONIZATION={self.options.result_jsonization}',
-            f'-DRecognizer_BINARY_SERIALIZATION={self.options.binary_serialization}',
-            f'-DRecognizer_ENABLE_TESTING={self.options.enable_testing}'
+            f'-DRecognizer_BINARY_SERIALIZATION={self.options.binary_serialization}'
         ]
         return cmake_args
 
 
     def build(self):
         self.build_with_args(self.common_recognizer_build_args())
+
+
+    def package_id(self):
+        self.common_settings_for_package_id()
 
 
     def package(self):

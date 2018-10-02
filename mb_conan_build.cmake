@@ -5,6 +5,20 @@ cmake_policy( SET CMP0025 NEW )
 
 enable_language( C CXX  )
 
+set( TESTING_DEFAULT OFF )
+
+if( NOT CONAN_EXPORTED )
+    set( TESTING_DEFAULT ON )
+endif()
+
+option( MB_ENABLE_TESTING "Enable testing" ${TESTING_DEFAULT} )
+
+if( NOT CONAN_EXPORTED )
+    if ( MB_ENABLE_TESTING )
+        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "enable_testing=True" )
+    endif()
+endif()
+
 # in conan local cache or user has already performed conan install command
 if( CONAN_EXPORTED OR MB_SKIP_CONAN_INSTALL )
     # standard conan installation, deps will be defined in conanfile.py

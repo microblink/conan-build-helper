@@ -3,14 +3,6 @@ set_property( CACHE Recognizer_RESULT_JSONIZATION PROPERTY STRINGS "Off" "Serial
 
 option( Recognizer_BINARY_SERIALIZATION "Enable binary serialization of results and settings" ON )
 
-set( TESTING_DEFAULT OFF )
-
-if( NOT CONAN_EXPORTED )
-    set( TESTING_DEFAULT ON )
-endif()
-
-option( Recognizer_ENABLE_TESTING "Enable RecognizerTests" ${TESTING_DEFAULT} )
-
 option( Recognizer_ENABLE_IMSHOW "Enable imshow" OFF )
 
 if( NOT CONAN_EXPORTED )
@@ -19,9 +11,6 @@ if( NOT CONAN_EXPORTED )
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "binary_serialization=True" )
     endif()
 
-    if ( Recognizer_ENABLE_TESTING )
-        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "enable_testing=True" )
-    endif()
     if ( Recognizer_ENABLE_IMSHOW )
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "MVToolset:enable_imshow=True" )
     endif()
@@ -41,6 +30,5 @@ macro( print_recognizer_options )
     print_title( "Recognizer options" )
     print_cache_var( Recognizer_RESULT_JSONIZATION   )
     print_cache_var( Recognizer_BINARY_SERIALIZATION )
-    print_cache_var( Recognizer_ENABLE_TESTING )
     print_cache_var( Recognizer_ENABLE_IMSHOW )
 endmacro()
