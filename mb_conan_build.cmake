@@ -188,13 +188,17 @@ else() # in user space and user has not performed conan install command
     # other cases should be auto-detected by conan.cmake
 
     # Make sure to use conanfile.py to define dependencies, to stay consistent
-    if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.py )
-        set( CONANFILE conanfile.py )
-    elseif( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt )
-        set( CONANFILE conanfile.txt )
+    if ( CONANFILE_LOCATION )
+        set( CONANFILE ${CONANFILE_LOCATION} )
+    else()
+        if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.py )
+            set( CONANFILE conanfile.py )
+        elseif( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/conanfile.txt )
+            set( CONANFILE conanfile.txt )
+        endif()
     endif()
     if ( NOT CONANFILE )
-        message( FATAL_ERROR "Cannot find neither conanfile.py nor conanfile.txt in current source directory" )
+        message( FATAL_ERROR "Cannot find neither conanfile.py nor conanfile.txt in current source directory. You can also use CONANFILE_LOCATION to specify path to either conanfile.py or conanfile.txt and override automatic detection." )
     endif()
     mb_conan_cmake_run( CONANFILE ${CONANFILE} ${conan_cmake_run_params} BUILD missing )
 
