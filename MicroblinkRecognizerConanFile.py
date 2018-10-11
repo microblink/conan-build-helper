@@ -1,13 +1,15 @@
 from conans import python_requires
 
-base = python_requires('MicroblinkConanFile/2.0.0@microblink/stable')
+base = python_requires('MicroblinkConanFile/3.0.0@microblink/stable')
 
 class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
     options = dict(base.MicroblinkConanFile.options, **{
         'result_jsonization': ['Off', 'Serialization', 'SerializationAndTesting'],
         'binary_serialization': [True, False]
     })
-    default_options = ('result_jsonization=Off',) + base.MicroblinkConanFile.default_options
+    default_options = dict(base.MicroblinkConanFile.default_options, **{
+        'result_jsonization' : 'Off'
+    })
 
 
     def config_options(self):

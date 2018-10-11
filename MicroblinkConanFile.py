@@ -7,7 +7,11 @@ class MicroblinkConanFile(ConanFile):
         'enable_timer': [True, False],
         'enable_testing': [True, False]
     }
-    default_options = 'log_level=WarningsAndErrors', 'enable_timer=False', 'enable_testing=False'
+    default_options = {
+        'log_level': 'WarningsAndErrors',
+        'enable_timer': False,
+        'enable_testing': False
+    }
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
     no_copy_source=True
