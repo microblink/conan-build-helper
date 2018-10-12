@@ -47,6 +47,8 @@ class MicroblinkConanFile(ConanFile):
                 args.append('-DMB_ENABLE_RUNTIME_CHECKS=ON')
 
         self.add_base_args(args)
+        # this makes packages forward compatible with future compiler updates
+        args.append('-DMB_TREAT_WARNINGS_AS_ERRORS=OFF')
         cmake.configure(args = args)
         cmake.build()
 
