@@ -109,7 +109,7 @@ class MicroblinkConanFile(ConanFile):
         full_package_mode_deps = {
             'AndroidNdk',
             'Bit',
-            'boost',
+            'Boost',
             'ConcurrentQueue',
             'ConfigEx',
             'Eigen',
