@@ -19,6 +19,8 @@ if( NOT CONAN_EXPORTED )
     endif()
 endif()
 
+option( MB_SKIP_CONAN_INSTALL "Prevent CMake from calling conan install" OFF )
+
 # in conan local cache or user has already performed conan install command
 if( CONAN_EXPORTED OR MB_SKIP_CONAN_INSTALL )
     # standard conan installation, deps will be defined in conanfile.py
