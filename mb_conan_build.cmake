@@ -69,6 +69,10 @@ else() # in user space and user has not performed conan install command
         list( APPEND conan_cmake_run_params BUILD_TYPE "Debug" )
     endif()
 
+    if ( MB_DEV_RELEASE AND CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT CMAKE_BUILD_TYPE )
+        set( CMAKE_BUILD_TYPE Debug ) # required to correctly detect VS runtime toolset
+    endif()
+
     # detect profile
     set( HAVE_PROFILE OFF )
     if( IOS )
