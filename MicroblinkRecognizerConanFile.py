@@ -44,7 +44,7 @@ class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
 
 
     def package(self):
-        self.package_all_headers()
+        self.package_public_headers()
         self.package_all_libraries()
         self.copy('features_*.cmake')
         self.copy('Dictionary/Dictionaries/*.zzip', dst='res')
