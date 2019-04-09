@@ -42,6 +42,10 @@ else() # in user space and user has not performed conan install command
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "LogAndTimer:redirect_to_stdout=True" )
     endif()
 
+    if( ANDROID_STUDIO_WRAPPED_EXE AND MB_AS_HAS_GTEST )
+        list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "GTest:redirect_to_android_log=True" )
+    endif()
+
     if( CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE )
         set( CONAN_CMAKE_MULTI ON )
     else()
