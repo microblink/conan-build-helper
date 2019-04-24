@@ -60,7 +60,7 @@ else() # in user space and user has not performed conan install command
     # Download automatically, you can also just copy the conan.cmake file
     if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
        message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
-       file( DOWNLOAD "https://raw.githubusercontent.com/conan-io/cmake-conan/v0.13/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake" )
+       file( DOWNLOAD "https://raw.githubusercontent.com/microblink/cmake-conan/v0.13.1/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake" )
     endif()
     include( ${CMAKE_BINARY_DIR}/conan.cmake )
 
@@ -75,6 +75,15 @@ else() # in user space and user has not performed conan install command
 
     if ( MB_DEV_RELEASE AND CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT CMAKE_BUILD_TYPE )
         set( CMAKE_BUILD_TYPE Debug ) # required to correctly detect VS runtime toolset
+    endif()
+
+    if ( MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio" )
+        if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR MB_DEV_RELEASE )
+            # set compiler runtime to MDd
+            list( APPEND conan_cmake_run_params SETTINGS compiler.runtime=MDd )
+        else()
+            list( APPEND conan_cmake_run_params SETTINGS compiler.runtime=MD )
+        endif()
     endif()
 
     # detect profile
