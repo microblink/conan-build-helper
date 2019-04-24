@@ -77,6 +77,15 @@ else() # in user space and user has not performed conan install command
         set( CMAKE_BUILD_TYPE Debug ) # required to correctly detect VS runtime toolset
     endif()
 
+    if ( MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio" )
+        if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR MB_DEV_RELEASE )
+            # set compiler runtime to MDd
+            list( APPEND conan_cmake_run_params SETTINGS compiler.runtime=MDd )
+        else()
+            list( APPEND conan_cmake_run_params SETTINGS compiler.runtime=MD )
+        endif()
+    endif()
+
     # detect profile
     set( HAVE_PROFILE OFF )
     if( IOS )
