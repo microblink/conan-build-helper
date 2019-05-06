@@ -3,7 +3,7 @@ from conans import ConanFile, tools
 
 class MicroblinkConanFile(ConanFile):
     options = {
-        'log_level' : ['Verbose', 'Debug', 'Info', 'WarningsAndErrors'],
+        'log_level': ['Verbose', 'Debug', 'Info', 'WarningsAndErrors'],
         'enable_timer': [True, False],
         'enable_testing': [True, False]
     }
@@ -14,7 +14,7 @@ class MicroblinkConanFile(ConanFile):
     }
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
-    no_copy_source=True
+    no_copy_source = True
 
     def add_base_args(self, args):
         if 'log_level' in self.options:
@@ -36,7 +36,8 @@ class MicroblinkConanFile(ConanFile):
 
     def build_with_args(self, args):
         from microblink import CMake
-        cmake = CMake(self, build_type = 'Release') # always build release, whether full release or dev-release (in debug mode)
+        # always build release, whether full release or dev-release (in debug mode)
+        cmake = CMake(self, build_type='Release')
         if self.settings.build_type == 'Debug':
             args.extend(['-DCMAKE_BUILD_TYPE=Release', '-DMB_DEV_RELEASE=ON'])
             # runtime checks on Android require rooted device, and on iOS special
@@ -47,7 +48,7 @@ class MicroblinkConanFile(ConanFile):
         self.add_base_args(args)
         # this makes packages forward compatible with future compiler updates
         args.append('-DMB_TREAT_WARNINGS_AS_ERRORS=OFF')
-        cmake.configure(args = args)
+        cmake.configure(args=args)
         cmake.build()
 
     def build(self):
@@ -82,9 +83,10 @@ class MicroblinkConanFile(ConanFile):
             self.info_build.settings.os.api_level = 16
 
     def imports(self):
-       self.copy("*.dll", "", "bin")
-       self.copy("*.dylib", "", "lib")
-       self.copy("*.zzip", src='res', dst='')
+        self.copy("*.dll", "", "bin")
+        self.copy("*.dylib", "", "lib")
+        self.copy("*.zzip", src='res', dst='')
+        self.copy("*.pod", src='res', dst='')
 
     def ignore_testing_for_package_id(self):
         del self.info.options.enable_testing
@@ -118,6 +120,7 @@ class MicroblinkConanFile(ConanFile):
             'OpenCVProcessing',
             'OpenCVVideoIO',
             'Pimpl',
+            'range-v3',
             'RapidJSON',
             'RecognizerProtection',
             'Sweater',
@@ -135,9 +138,10 @@ class MicroblinkConanFile(ConanFile):
         self.common_settings_for_package_id()
 
     def package_info(self):
-        if self.settings.build_type == 'Debug' and not tools.cross_building(self.settings) and (self.settings.compiler == 'clang' or self.settings.compiler == 'apple-clang'):
+        if self.settings.build_type == 'Debug' and not tools.cross_building(self.settings) and \
+                (self.settings.compiler == 'clang' or self.settings.compiler == 'apple-clang'):
             # runtime checks are enabled, so we need to add ASAN/UBSAN linker flags
-            runtime_check_flags = [ '-fsanitize=undefined', '-fsanitize=address']
+            runtime_check_flags = ['-fsanitize=undefined', '-fsanitize=address']
             if self.settings.compiler == 'clang':
                 runtime_check_flags.append('-fsanitize=integer')
             self.cpp_info.sharedlinkflags.extend(runtime_check_flags)
