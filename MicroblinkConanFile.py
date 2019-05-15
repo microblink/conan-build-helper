@@ -87,6 +87,8 @@ class MicroblinkConanFile(ConanFile):
         self.copy("*.dylib", "", "lib")
         self.copy("*.zzip", src='res', dst='')
         self.copy("*.pod", src='res', dst='')
+        self.copy("*.strop", src='res', dst='')
+        self.copy("*.rtttl", src='res', dst='')
 
     def ignore_testing_for_package_id(self):
         del self.info.options.enable_testing
