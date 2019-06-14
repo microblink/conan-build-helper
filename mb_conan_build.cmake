@@ -92,8 +92,10 @@ else() # in user space and user has not performed conan install command
         # iOS will use Apple Clang - determine version and decide which profile to use
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
         list( GET VERSION_LIST 0 apple_clang_major_version )
+        list( GET VERSION_LIST 1 apple_clang_minor_version  )
+        list( GET VERSION_LIST 2 apple_clang_bugfix_version )
 
-        list( APPEND conan_cmake_run_params PROFILE ios-xcode${apple_clang_major_version} )
+        list( APPEND conan_cmake_run_params PROFILE ios-clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
         set( HAVE_PROFILE ON )
     elseif( ANDROID )
         set( ndk_revision_suffix )
@@ -107,18 +109,21 @@ else() # in user space and user has not performed conan install command
     elseif( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
         list( GET VERSION_LIST 0 compiler_major_version )
+        list( GET VERSION_LIST 1 compiler_minor_version )
 
         if( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" )
             list( APPEND conan_cmake_run_params PROFILE clang${compiler_major_version}-linux )
         else()
-            list( APPEND conan_cmake_run_params PROFILE gcc${compiler_major_version}-linux )
+            list( APPEND conan_cmake_run_params PROFILE gcc-${compiler_major_version}.${compiler_minor_version}-linux )
         endif()
         set( HAVE_PROFILE ON )
     elseif( CMAKE_SYSTEM_NAME STREQUAL "Darwin" )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
-        list( GET VERSION_LIST 0 apple_clang_major_version )
+        list( GET VERSION_LIST 0 apple_clang_major_version  )
+        list( GET VERSION_LIST 1 apple_clang_minor_version  )
+        list( GET VERSION_LIST 2 apple_clang_bugfix_version )
 
-        list( APPEND conan_cmake_run_params PROFILE macos-xcode${apple_clang_major_version} )
+        list( APPEND conan_cmake_run_params PROFILE macos-clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
         set( HAVE_PROFILE ON )
     endif()
 
