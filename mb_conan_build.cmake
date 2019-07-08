@@ -129,6 +129,13 @@ else() # in user space and user has not performed conan install command
 
         list( APPEND conan_cmake_run_params PROFILE macos-clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
         set( HAVE_PROFILE ON )
+    elseif( MSVC )
+        string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
+        list( GET VERSION_LIST 0 compiler_major_version )
+        list( GET VERSION_LIST 1 compiler_minor_version )
+
+        list( APPEND conan_cmake_run_params PROFILE msvc-${compiler_major_version}.${compiler_minor_version} )
+        set( HAVE_PROFILE ON )
     endif()
 
     if( MB_CONAN_SETUP_PARAMS )
