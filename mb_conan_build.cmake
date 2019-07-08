@@ -115,7 +115,7 @@ else() # in user space and user has not performed conan install command
             list( APPEND conan_cmake_run_params PROFILE clang${compiler_major_version}-linux )
         else()
             set( linux_optimization_suffix )
-            if ( NOT MB_INTEL_OPTIMIZATION STREQUAL "generic" )
+            if ( DEFINED MB_INTEL_OPTIMIZATION AND NOT MB_INTEL_OPTIMIZATION STREQUAL "generic" )
                 set( linux_optimization_suffix "-${MB_INTEL_OPTIMIZATION}" )
             endif()
             list( APPEND conan_cmake_run_params PROFILE gcc-${compiler_major_version}.${compiler_minor_version}-linux${linux_optimization_suffix} )
