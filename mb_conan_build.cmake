@@ -119,7 +119,7 @@ else() # in user space and user has not performed conan install command
                 set( linux_optimization_suffix "-${MB_INTEL_OPTIMIZATION}" )
             endif()
             list( APPEND conan_cmake_run_params PROFILE gcc-${compiler_major_version}.${compiler_minor_version}-linux${linux_optimization_suffix} )
-            option( MB_USE_GCC_CXX11_ABI "Use modern CXX11 ABI for GCC builds" OFF )
+            option( MB_USE_GCC_CXX11_ABI "Use modern CXX11 ABI for GCC builds" ON )
             if ( MB_USE_GCC_CXX11_ABI )
                 list( APPEND conan_cmake_run_params SETTINGS compiler.libcxx=libstdc++11 )
             else()
