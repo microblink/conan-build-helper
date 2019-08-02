@@ -124,7 +124,6 @@ class MicroblinkConanFile(ConanFile):
             'Pimpl',
             'range-v3',
             'RapidJSON',
-            'RecognizerProtection',
             'Sweater',
             'UTFCpp',
             'Variant',
