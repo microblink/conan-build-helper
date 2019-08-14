@@ -59,7 +59,7 @@ else() # in user space and user has not performed conan install command
 
     # Download automatically, you can also just copy the conan.cmake file
     if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
-       message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
+       message( STATUS "Downloading conan.cmake from https://github.com/microblink/cmake-conan" )
        file( DOWNLOAD "https://raw.githubusercontent.com/microblink/cmake-conan/master/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake" )
     endif()
     include( ${CMAKE_BINARY_DIR}/conan.cmake )
