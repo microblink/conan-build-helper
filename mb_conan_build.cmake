@@ -59,8 +59,8 @@ else() # in user space and user has not performed conan install command
 
     # Download automatically, you can also just copy the conan.cmake file
     if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
-       message( STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan" )
-       file( DOWNLOAD "https://raw.githubusercontent.com/microblink/cmake-conan/v0.14/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake" )
+       message( STATUS "Downloading conan.cmake from https://github.com/microblink/cmake-conan" )
+       file( DOWNLOAD "https://raw.githubusercontent.com/microblink/cmake-conan/master/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake" )
     endif()
     include( ${CMAKE_BINARY_DIR}/conan.cmake )
 
@@ -135,6 +135,51 @@ else() # in user space and user has not performed conan install command
 
         list( APPEND conan_cmake_run_params PROFILE macos-clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
         set( HAVE_PROFILE ON )
+    elseif( EMSCRIPTEN )
+        string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
+        list( GET VERSION_LIST 0 clang_major_version  )
+        set( emscripten_backend "upstream" )
+        if ( ${clang_major_version} EQUAL 6 )
+            set( emscripten_backend "fastcomp" )
+        endif()
+        list( APPEND conan_cmake_run_params PROFILE emscripten-${EMSCRIPTEN_VERSION}-${emscripten_backend} )
+        set( HAVE_PROFILE ON )
+
+        if ( DEFINED MB_EMSCRIPTEN_COMPILE_TO_WEBASSEMBLY )
+            if ( MB_EMSCRIPTEN_COMPILE_TO_WEBASSEMBLY )
+                list( APPEND conan_cmake_run_params SETTINGS arch=wasm )
+            else()
+                list( APPEND conan_cmake_run_params SETTINGS arch=asm.js )
+            endif()
+        endif()
+
+        if ( DEFINED MB_EMSCRIPTEN_ENABLE_PTHREADS )
+            if ( MB_EMSCRIPTEN_ENABLE_PTHREADS )
+                list( APPEND conan_cmake_run_params SETTINGS os.threads=true )
+            else()
+                list( APPEND conan_cmake_run_params SETTINGS os.threads=false )
+            endif()
+        endif()
+
+        if ( DEFINED MB_EMSCRIPTEN_USE_WEBGL2 )
+            if ( MB_EMSCRIPTEN_USE_WEBGL2 )
+                list( APPEND conan_cmake_run_params SETTINGS os.webGLVersion=2 )
+            else()
+                list( APPEND conan_cmake_run_params SETTINGS os.webGLVersion=1 )
+            endif()
+        endif()
+
+        if ( DEFINED MB_EMSCRIPTEN_TARGET_ENVIRONMENT )
+            list( APPEND conan_cmake_run_params SETTINGS os.environment=${MB_EMSCRIPTEN_TARGET_ENVIRONMENT} )
+        endif()
+
+        if ( DEFINED MB_EMSCRIPTEN_SIMD )
+            if ( MB_EMSCRIPTEN_SIMD )
+                list( APPEND conan_cmake_run_params SETTINGS os.simd=true )
+            else()
+                list( APPEND conan_cmake_run_params SETTINGS os.simd=false )
+            endif()
+        endif()
     endif()
 
     if( MB_CONAN_SETUP_PARAMS )
