@@ -157,7 +157,7 @@ else() # in user space and user has not performed conan install command
             if ( MB_EMSCRIPTEN_ENABLE_PTHREADS )
                 list( APPEND conan_cmake_run_params SETTINGS os.threads=true )
                 if ( MB_EMSCRIPTEN_THREAD_POOL_SIZE )
-                    list( APPEND conan_cmake_run_params SETTINGS os.thread_pool_size=${MB_EMSCRIPTEN_THREAD_POOL_SIZE} ) )
+                    list( APPEND conan_cmake_run_params SETTINGS os.thread_pool_size=${MB_EMSCRIPTEN_THREAD_POOL_SIZE} )
                 endif()
             else()
                 list( APPEND conan_cmake_run_params SETTINGS os.threads=false )
