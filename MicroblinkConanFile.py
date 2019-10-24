@@ -77,7 +77,7 @@ class MicroblinkConanFile(ConanFile):
 
     def build_id(self):
         if self.settings.os == 'iOS':
-            self.info_build.settings.arch = 'All'
+            self.info_build.settings.arch = 'ios_fat'
             self.info_build.settings.os.version = '8.0'
         if self.settings.os == 'Android':
             self.info_build.settings.os.api_level = 16
@@ -96,7 +96,7 @@ class MicroblinkConanFile(ConanFile):
     def common_settings_for_package_id(self):
         # Apple has fat libraries, so no need for having separate packages
         if self.settings.os == 'iOS':
-            self.info.settings.arch = "All"
+            self.info.settings.arch = "ios_fat"
 
         # Conan uses semver_mode by default for all dependencies. However,
         # we want some specific dependencies to be used in full_package mode,
