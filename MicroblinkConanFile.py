@@ -104,31 +104,12 @@ class MicroblinkConanFile(ConanFile):
         # Dependency user can always override this default behaviour.
 
         full_package_mode_deps = {
-            'AndroidNdk',
-            'Bit',
             'Boost',
-            'ConcurrentQueue',
-            'ConfigEx',
             'Eigen',
-            'Err',
-            'Functionoid',
-            'Iconv',
-            'MicroECC',
-            'OpenCV',
-            'OpenCVAnalysis',
-            'OpenCVCore',
-            'OpenCVGUI',
-            'OpenCVImageIO',
-            'OpenCVProcessing',
-            'OpenCVVideoIO',
-            'Pimpl',
             'range-v3',
             'RapidJSON',
-            'RecognizerProtection',
-            'Sweater',
             'UTFCpp',
-            'Variant',
-            'Zlib'
+            'Variant'
         }
 
         for r in self.requires:
