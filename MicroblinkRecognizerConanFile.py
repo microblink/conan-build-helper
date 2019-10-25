@@ -39,7 +39,7 @@ class MicroblinkRecognizerConanFile(base.MicroblinkConanFile):
         self.common_settings_for_package_id()
 
     def package(self):
-        self.package_public_headers()
+        self.package_all_headers()
         self.package_all_libraries()
         self.copy('features_*.cmake')
         self.copy('Dictionary/Dictionaries/*.zzip', dst='res')
