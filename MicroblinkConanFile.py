@@ -16,6 +16,7 @@ class MicroblinkConanFile(ConanFile):
     generators = "cmake"
     no_copy_source = True
 
+
     def add_base_args(self, args):
         if 'log_level' in self.options:
             if self.options.log_level == 'Verbose':
@@ -34,6 +35,7 @@ class MicroblinkConanFile(ConanFile):
         if 'enable_testing' in self.options:
             args.append(f'-DMB_ENABLE_TESTING={self.options.enable_testing}')
 
+
     def build_with_args(self, args):
         from microblink import CMake
         # always build release, whether full release or dev-release (in debug mode)
@@ -51,14 +53,14 @@ class MicroblinkConanFile(ConanFile):
         cmake.configure(args=args)
         cmake.build()
 
+
     def build(self):
         self.build_with_args([])
+
 
     def package_all_headers(self):
         self.copy("*.h*", dst="include", src=f"{self.name}/Source")
 
-    def package_public_headers(self):
-        self.copy("*.h*", dst="include", src='include')
 
     def package_all_libraries(self):
         if self.settings.os == 'Windows':
@@ -71,9 +73,11 @@ class MicroblinkConanFile(ConanFile):
         else:
             self.copy("*.a", dst="lib", keep_path=False)
 
+
     def package(self):
-        self.package_public_headers()
+        self.package_all_headers()
         self.package_all_libraries()
+
 
     def build_id(self):
         if self.settings.os == 'iOS':
@@ -81,6 +85,7 @@ class MicroblinkConanFile(ConanFile):
             self.info_build.settings.os.version = '8.0'
         if self.settings.os == 'Android':
             self.info_build.settings.os.api_level = 16
+
 
     def imports(self):
         self.copy("*.dll", "", "bin")
@@ -90,8 +95,10 @@ class MicroblinkConanFile(ConanFile):
         self.copy("*.strop", src='res', dst='')
         self.copy("*.rtttl", src='res', dst='')
 
+
     def ignore_testing_for_package_id(self):
         del self.info.options.enable_testing
+
 
     def common_settings_for_package_id(self):
         # Apple has fat libraries, so no need for having separate packages
@@ -116,9 +123,11 @@ class MicroblinkConanFile(ConanFile):
             if r in full_package_mode_deps:
                 self.info.requires[r].full_package_mode()
 
+
     def package_id(self):
         self.ignore_testing_for_package_id()
         self.common_settings_for_package_id()
+
 
     def package_info(self):
         if self.settings.build_type == 'Debug' and not tools.cross_building(self.settings) and \
