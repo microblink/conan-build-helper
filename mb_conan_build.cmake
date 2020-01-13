@@ -59,8 +59,34 @@ else() # in user space and user has not performed conan install command
 
     # Download automatically, you can also just copy the conan.cmake file
     if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
-       message( STATUS "Downloading conan.cmake from https://github.com/microblink/cmake-conan" )
-       file( DOWNLOAD "https://raw.githubusercontent.com/microblink/cmake-conan/master/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake" )
+        set( download_attempt 1 )
+        set( download_succeeded FALSE )
+        while( NOT ${download_succeeded} AND ${download_attempt} LESS_EQUAL 5 )
+            message( STATUS "Downloading conan.cmake from https://github.com/microblink/cmake-conan" )
+            file(
+                DOWNLOAD
+                    "https://raw.githubusercontent.com/microblink/cmake-conan/v0.14.1/conan.cmake"
+                    "${CMAKE_BINARY_DIR}/conan.cmake"
+                SHOW_PROGRESS
+                TIMEOUT
+                    2  # 2 seconds timeout
+                STATUS
+                    download_status
+            )
+            list( GET download_status 0 error_status      )
+            list( GET download_status 1 error_description )
+            if ( error_status EQUAL 0 )
+                set( download_succeeded TRUE )
+            else()
+                message( STATUS "Download failed due to error: [code: ${error_status}] ${error_description}" )
+                math( EXPR download_attempt "${download_attempt} + 1" OUTPUT_FORMAT DECIMAL )
+            endif()
+        endwhile()
+        if ( NOT ${download_succeeded} )
+            # remove empty file
+            file( REMOVE "${CMAKE_BINARY_DIR}/conan.cmake" )
+            message( FATAL_ERROR "Failed to download conan.cmake, even after ${download_attempt} retrials. Please check your Internet connection!" )
+        endif()
     endif()
     include( ${CMAKE_BINARY_DIR}/conan.cmake )
 
