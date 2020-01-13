@@ -26,19 +26,23 @@ if( NOT EXISTS "${CMAKE_BINARY_DIR}/mb_conan_build.cmake" )
                 "https://raw.githubusercontent.com/microblink/conan-build-helper/feature/retry-download/mb_conan_build.cmake"
                 "${CMAKE_BINARY_DIR}/mb_conan_build.cmake"
             SHOW_PROGRESS
+            TIMEOUT
+                2  # 2 seconds timeout
             STATUS
                 download_status
         )
         list( GET download_status 0 error_status      )
         list( GET download_status 1 error_description )
-        if ( download_status EQUAL 0 )
+        if ( error_status EQUAL 0 )
             set( download_succeeded TRUE )
         else()
-            message( STATUS "Download failed due to error: [code: ${download_status}] ${error_description}" )
+            message( STATUS "Download failed due to error: [code: ${error_status}] ${error_description}" )
             math( EXPR download_attempt "${download_attempt} + 1" OUTPUT_FORMAT DECIMAL )
         endif()
     endwhile()
     if ( NOT ${download_succeeded} )
+        # remove empty file
+        file( REMOVE "${CMAKE_BINARY_DIR}/mb_conan_build.cmake" )
         message( FATAL_ERROR "Failed to download mb_conan_build.cmake, even after ${download_attempt} retrials. Please check your Internet connection!" )
     endif()
 endif()
