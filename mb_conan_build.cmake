@@ -20,7 +20,7 @@ if( NOT CONAN_EXPORTED )
 endif()
 
 option( MB_SKIP_CONAN_INSTALL "Prevent CMake from calling conan install" OFF )
-option( MB_BUILD_MISSING_CONAN_PACKAGES "Build conan packages that have not prebuilt binaries on the server available" ON)
+option( MB_BUILD_MISSING_CONAN_PACKAGES "Build conan packages that have not prebuilt binaries on the server available" ON )
 
 # in conan local cache or user has already performed conan install command
 if( CONAN_EXPORTED OR MB_SKIP_CONAN_INSTALL )
