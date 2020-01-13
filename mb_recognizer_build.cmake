@@ -17,8 +17,29 @@ if( NOT CONAN_EXPORTED )
 endif()
 
 if( NOT EXISTS "${CMAKE_BINARY_DIR}/mb_conan_build.cmake" )
-    message( STATUS "Downloading mb_conan_build.cmake from https://github.com/microblink/conan-build-helper" )
-    file( DOWNLOAD "https://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake" "${CMAKE_BINARY_DIR}/mb_conan_build.cmake" )
+    set( download_attempt 1 )
+    set( download_succeeded FALSE )
+    while( NOT ${download_succeeded} AND ${download_attempt} LESS_EQUAL 5 )
+        message( STATUS "Downloading mb_conan_build.cmake from https://github.com/microblink/conan-build-helper. Attempt #${download_attempt}" )
+        file(
+            DOWNLOAD
+                "https://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake"
+                "${CMAKE_BINARY_DIR}/mb_conan_build.cmake"
+            SHOW_PROGRESS
+            STATUS
+                download_status
+        )
+        list( GET download_status 0 error_status      )
+        list( GET download_status 1 error_description )
+        if ( download_status EQUAL 0 )
+            set( download_succeeded TRUE )
+        else()
+            message( STATUS "Download failed due to error: '${error_description}'" )
+            math( EXPR download_attempt "${download_attempt} + 1" OUTPUT_FORMAT DECIMAL )
+    endwhile()
+    if ( NOT ${download_succeeded} )
+        message( FATAL_ERROR "Failed to download mb_conan_build.cmake, even after ${download_attempt} retrials. Please check your Internet connection!" )
+    endif()
 endif()
 
 include( ${CMAKE_BINARY_DIR}/mb_conan_build.cmake )
