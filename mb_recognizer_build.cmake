@@ -23,7 +23,7 @@ if( NOT EXISTS "${CMAKE_BINARY_DIR}/mb_conan_build.cmake" )
         message( STATUS "Downloading mb_conan_build.cmake from http://github.com/microblink/conan-build-helper. Attempt #${download_attempt}" )
         file(
             DOWNLOAD
-                "http://raw.githubusercontent.com/microblink/conan-build-helper/feature/download-via-http/mb_conan_build.cmake"
+                "http://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake"
                 "${CMAKE_BINARY_DIR}/mb_conan_build.cmake"
             SHOW_PROGRESS
             TIMEOUT
