@@ -62,10 +62,10 @@ else() # in user space and user has not performed conan install command
         set( download_attempt 1 )
         set( download_succeeded FALSE )
         while( NOT ${download_succeeded} AND ${download_attempt} LESS_EQUAL 5 )
-            message( STATUS "Downloading conan.cmake from https://github.com/microblink/cmake-conan" )
+            message( STATUS "Downloading conan.cmake from http://github.com/microblink/cmake-conan" )
             file(
                 DOWNLOAD
-                    "https://raw.githubusercontent.com/microblink/cmake-conan/v0.14.1/conan.cmake"
+                    "http://raw.githubusercontent.com/microblink/cmake-conan/v0.14.1/conan.cmake"
                     "${CMAKE_BINARY_DIR}/conan.cmake"
                 SHOW_PROGRESS
                 TIMEOUT
