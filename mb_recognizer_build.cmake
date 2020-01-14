@@ -20,10 +20,10 @@ if( NOT EXISTS "${CMAKE_BINARY_DIR}/mb_conan_build.cmake" )
     set( download_attempt 1 )
     set( download_succeeded FALSE )
     while( NOT ${download_succeeded} AND ${download_attempt} LESS_EQUAL 5 )
-        message( STATUS "Downloading mb_conan_build.cmake from https://github.com/microblink/conan-build-helper. Attempt #${download_attempt}" )
+        message( STATUS "Downloading mb_conan_build.cmake from http://github.com/microblink/conan-build-helper. Attempt #${download_attempt}" )
         file(
             DOWNLOAD
-                "https://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake"
+                "http://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake"
                 "${CMAKE_BINARY_DIR}/mb_conan_build.cmake"
             SHOW_PROGRESS
             TIMEOUT
