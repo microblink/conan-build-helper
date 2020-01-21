@@ -22,6 +22,56 @@ endif()
 option( MB_SKIP_CONAN_INSTALL "Prevent CMake from calling conan install" OFF )
 option( MB_BUILD_MISSING_CONAN_PACKAGES "Build conan packages that have not prebuilt binaries on the server available" ON )
 
+if( NOT COMMAND remote_include )
+    macro( remote_include file_name url fallback_url )
+        if( NOT EXISTS "${CMAKE_BINARY_DIR}/${file_name}" )
+            set( download_succeeded FALSE )
+            foreach( current_url ${url} ${fallback_url} )
+                set( download_attempt 1 )
+                set( sleep_seconds 1 )
+                while( NOT ${download_succeeded} AND ${download_attempt} LESS_EQUAL 3 )
+                    message( STATUS "Downloading mb_conan_build.cmake from ${current_url}. Attempt #${download_attempt}" )
+                    file(
+                        DOWNLOAD
+                            "${current_url}"
+                            "${CMAKE_BINARY_DIR}/${file_name}"
+                        SHOW_PROGRESS
+                        TIMEOUT
+                            2  # 2 seconds timeout
+                        STATUS
+                            download_status
+                    )
+                    list( GET download_status 0 error_status      )
+                    list( GET download_status 1 error_description )
+                    if ( error_status EQUAL 0 )
+                        set( download_succeeded TRUE )
+                    else()
+                        message( STATUS "Download failed due to error: [code: ${error_status}] ${error_description}" )
+                        math( EXPR download_attempt "${download_attempt} + 1" OUTPUT_FORMAT DECIMAL )
+                        math( EXPR sleep_seconds "${sleep_seconds} + 1" OUTPUT_FORMAT DECIMAL )
+                        message( STATUS "Sleep ${sleep_seconds} seconds" )
+                        execute_process( COMMAND "${CMAKE_COMMAND}" -E sleep "${sleep_seconds}" )
+                    endif()
+                endwhile()
+                if ( ${download_succeeded} )
+                    # break the foreach loop
+                    break()
+                else()
+                    # remove empty file
+                    file( REMOVE "${CMAKE_BINARY_DIR}/${file_name}" )
+                endif()
+            endforeach()
+            if ( NOT ${download_succeeded} )
+                # remove empty file
+                file( REMOVE "${CMAKE_BINARY_DIR}/${file_name}" )
+                message( FATAL_ERROR "Failed to download ${file_name}, even after ${download_attempt} retrials. Please check your Internet connection!" )
+            endif()
+        endif()
+
+        include( ${CMAKE_BINARY_DIR}/${file_name} )
+    endmacro()
+endif()
+
 # in conan local cache or user has already performed conan install command
 if( CONAN_EXPORTED OR MB_SKIP_CONAN_INSTALL )
     # standard conan installation, deps will be defined in conanfile.py
@@ -57,41 +107,7 @@ else() # in user space and user has not performed conan install command
         set( CMAKE_BUILD_TYPE Release )
     endif()
 
-    # Download automatically, you can also just copy the conan.cmake file
-    if( NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake" )
-        set( download_attempt 1 )
-        set( download_succeeded FALSE )
-        while( NOT ${download_succeeded} AND ${download_attempt} LESS_EQUAL 5 )
-            message( STATUS "Downloading conan.cmake from http://github.com/microblink/cmake-conan" )
-            file(
-                DOWNLOAD
-                    "http://raw.githubusercontent.com/microblink/cmake-conan/v0.14.1/conan.cmake"
-                    "${CMAKE_BINARY_DIR}/conan.cmake"
-                SHOW_PROGRESS
-                TIMEOUT
-                    2  # 2 seconds timeout
-                STATUS
-                    download_status
-            )
-            list( GET download_status 0 error_status      )
-            list( GET download_status 1 error_description )
-            if ( error_status EQUAL 0 )
-                set( download_succeeded TRUE )
-            else()
-                message( STATUS "Download failed due to error: [code: ${error_status}] ${error_description}" )
-                math( EXPR download_attempt "${download_attempt} + 1" OUTPUT_FORMAT DECIMAL )
-                set(sleep_seconds 2)
-                message( STATUS "Sleep ${sleep_seconds} seconds" )
-                execute_process( COMMAND "${CMAKE_COMMAND}" -E sleep "${sleep_seconds}" )
-            endif()
-        endwhile()
-        if ( NOT ${download_succeeded} )
-            # remove empty file
-            file( REMOVE "${CMAKE_BINARY_DIR}/conan.cmake" )
-            message( FATAL_ERROR "Failed to download conan.cmake, even after ${download_attempt} retrials. Please check your Internet connection!" )
-        endif()
-    endif()
-    include( ${CMAKE_BINARY_DIR}/conan.cmake )
+    remote_include( "conan.cmake" "http://files.microblink.com/conan.cmake" "http://raw.githubusercontent.com/microblink/cmake-conan/v0.14.1/conan.cmake" )
 
     set( conan_cmake_run_params BASIC_SETUP CMAKE_TARGETS )
     if( IOS )
