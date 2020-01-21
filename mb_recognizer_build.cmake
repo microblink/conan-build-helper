@@ -16,41 +16,57 @@ if( NOT CONAN_EXPORTED )
     endif()
 endif()
 
-if( NOT EXISTS "${CMAKE_BINARY_DIR}/mb_conan_build.cmake" )
-    set( download_attempt 1 )
-    set( download_succeeded FALSE )
-    while( NOT ${download_succeeded} AND ${download_attempt} LESS_EQUAL 5 )
-        message( STATUS "Downloading mb_conan_build.cmake from http://github.com/microblink/conan-build-helper. Attempt #${download_attempt}" )
-        file(
-            DOWNLOAD
-                "http://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake"
-                "${CMAKE_BINARY_DIR}/mb_conan_build.cmake"
-            SHOW_PROGRESS
-            TIMEOUT
-                2  # 2 seconds timeout
-            STATUS
-                download_status
-        )
-        list( GET download_status 0 error_status      )
-        list( GET download_status 1 error_description )
-        if ( error_status EQUAL 0 )
-            set( download_succeeded TRUE )
-        else()
-            message( STATUS "Download failed due to error: [code: ${error_status}] ${error_description}" )
-            math( EXPR download_attempt "${download_attempt} + 1" OUTPUT_FORMAT DECIMAL )
-            set(sleep_seconds 2)
-            message( STATUS "Sleep ${sleep_seconds} seconds" )
-            execute_process( COMMAND "${CMAKE_COMMAND}" -E sleep "${sleep_seconds}" )
+if( NOT COMMAND remote_include )
+    macro( remote_include file_name url fallback_url )
+        if( NOT EXISTS "${CMAKE_BINARY_DIR}/${file_name}" )
+            set( download_succeeded FALSE )
+            foreach( current_url ${url} ${fallback_url} )
+                set( download_attempt 1 )
+                set( sleep_seconds 1 )
+                while( NOT ${download_succeeded} AND ${download_attempt} LESS_EQUAL 3 )
+                    message( STATUS "Downloading mb_conan_build.cmake from ${current_url}. Attempt #${download_attempt}" )
+                    file(
+                        DOWNLOAD
+                            "${current_url}"
+                            "${CMAKE_BINARY_DIR}/${file_name}"
+                        SHOW_PROGRESS
+                        TIMEOUT
+                            2  # 2 seconds timeout
+                        STATUS
+                            download_status
+                    )
+                    list( GET download_status 0 error_status      )
+                    list( GET download_status 1 error_description )
+                    if ( error_status EQUAL 0 )
+                        set( download_succeeded TRUE )
+                    else()
+                        message( STATUS "Download failed due to error: [code: ${error_status}] ${error_description}" )
+                        math( EXPR download_attempt "${download_attempt} + 1" OUTPUT_FORMAT DECIMAL )
+                        math( EXPR sleep_seconds "${sleep_seconds} + 1" OUTPUT_FORMAT DECIMAL )
+                        message( STATUS "Sleep ${sleep_seconds} seconds" )
+                        execute_process( COMMAND "${CMAKE_COMMAND}" -E sleep "${sleep_seconds}" )
+                    endif()
+                endwhile()
+                if ( ${download_succeeded} )
+                    # break the foreach loop
+                    break()
+                else()
+                    # remove empty file
+                    file( REMOVE "${CMAKE_BINARY_DIR}/${file_name}" )
+                endif()
+            endforeach()
+            if ( NOT ${download_succeeded} )
+                # remove empty file
+                file( REMOVE "${CMAKE_BINARY_DIR}/${file_name}" )
+                message( FATAL_ERROR "Failed to download ${file_name}, even after ${download_attempt} retrials. Please check your Internet connection!" )
+            endif()
         endif()
-    endwhile()
-    if ( NOT ${download_succeeded} )
-        # remove empty file
-        file( REMOVE "${CMAKE_BINARY_DIR}/mb_conan_build.cmake" )
-        message( FATAL_ERROR "Failed to download mb_conan_build.cmake, even after ${download_attempt} retrials. Please check your Internet connection!" )
-    endif()
+
+        include( ${CMAKE_BINARY_DIR}/${file_name} )
+    endmacro()
 endif()
 
-include( ${CMAKE_BINARY_DIR}/mb_conan_build.cmake )
+remote_include( "mb_conan_build.cmake" "http://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake" "http://files.microblink.com/mb_conan_build.cmake" )
 
 macro( print_recognizer_options )
     include(print_info_main)
