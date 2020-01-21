@@ -66,7 +66,7 @@ if( NOT COMMAND remote_include )
     endmacro()
 endif()
 
-remote_include( "mb_conan_build.cmake" "http://files.microblink.com/mb_conan_build.cmake" "http://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake" )
+remote_include( "mb_conan_build.cmake" "http://raw.githubusercontent.com/microblink/conan-build-helper/master/mb_conan_build.cmake" "http://files.microblink.com/mb_conan_build.cmake" )
 
 macro( print_recognizer_options )
     include(print_info_main)
