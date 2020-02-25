@@ -80,11 +80,12 @@ class MicroblinkConanFile(ConanFile):
 
 
     def build_id(self):
-        if self.settings.os == 'iOS':
-            self.info_build.settings.arch = 'ios_fat'
-            self.info_build.settings.os.version = '8.0'
-        if self.settings.os == 'Android':
-            self.info_build.settings.os.api_level = 16
+        if self.info_build.settings.os is not None:
+            if self.settings.os == 'iOS':
+                self.info_build.settings.arch = 'ios_fat'
+                self.info_build.settings.os.version = '8.0'
+            if self.settings.os == 'Android':
+                self.info_build.settings.os.api_level = 16
 
 
     def imports(self):
