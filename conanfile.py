@@ -38,6 +38,7 @@ class MicroblinkConanFile(object):
         from microblink import CMake
         # always build release, whether full release or dev-release (in debug mode)
         cmake = CMake(self, build_type='Release')
+        args.append(f'-DMB_CONAN_PACKAGE_NAME={self.name}')
         if self.settings.build_type == 'Debug':
             args.extend(['-DCMAKE_BUILD_TYPE=Release', '-DMB_DEV_RELEASE=ON'])
             # runtime checks on Android require rooted device, and on iOS special
