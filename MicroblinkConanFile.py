@@ -58,7 +58,7 @@ class MicroblinkConanFile(ConanFile):
         self.copy("*.h*", dst="include", src=f"{self.name}/Source")
 
     def package_public_headers(self):
-        self.copy("*.h*", dst="include", src='include')
+        self.copy("*.h*", dst="include", src=f"{self.name}/Include")
 
     def package_all_libraries(self):
         if self.settings.os == 'Windows':
