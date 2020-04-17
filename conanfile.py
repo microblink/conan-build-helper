@@ -1,4 +1,23 @@
-from conans import ConanFile, tools
+import conans
+import os
+
+
+class CMake(conans.CMake):
+    def configure(self, args=None, defs=None, source_folder=None, build_folder=None,
+                  cache_build_folder=None, pkg_config_paths=None):
+        env_prefix = "CONAN_CMAKE_CUSTOM_"
+        cmake_params = [
+            "-D%s=%s" % (key.replace(env_prefix, ''), value)
+            for key, value in os.environ.items() if key.startswith(env_prefix)
+        ]
+        if args is not None:
+            args.extend(cmake_params)
+        else:
+            args = cmake_params
+        super().configure(
+            args=args, defs=defs, source_folder=source_folder, build_folder=build_folder,
+            cache_build_folder=cache_build_folder, pkg_config_paths=pkg_config_paths
+        )
 
 
 class MicroblinkConanFile(object):
@@ -35,7 +54,6 @@ class MicroblinkConanFile(object):
             args.append(f'-DMB_ENABLE_TESTING={self.options.enable_testing}')
 
     def build_with_args(self, args):
-        from microblink import CMake
         # always build release, whether full release or dev-release (in debug mode)
         cmake = CMake(self, build_type='Release')
         args.append(f'-DMB_CONAN_PACKAGE_NAME={self.name}')
@@ -104,7 +122,6 @@ class MicroblinkConanFile(object):
         # we want some specific dependencies to be used in full_package mode,
         # most notably header only libraries.
         # Dependency user can always override this default behaviour.
-
         full_package_mode_deps = {
             'Boost',
             'Eigen',
@@ -113,7 +130,6 @@ class MicroblinkConanFile(object):
             'UTFCpp',
             'Variant'
         }
-
         for r in self.requires:
             if r in full_package_mode_deps:
                 self.info.requires[r].full_package_mode()
@@ -123,8 +139,9 @@ class MicroblinkConanFile(object):
         self.common_settings_for_package_id()
 
     def package_info(self):
-        if self.settings.build_type == 'Debug' and not tools.cross_building(self.settings) and \
-                (self.settings.compiler == 'clang' or self.settings.compiler == 'apple-clang'):
+        if self.settings.build_type == 'Debug' \
+           and not conans.tools.cross_building(self.settings) and \
+           self.settings.compiler in ['clang', 'apple-clang']:
             # runtime checks are enabled, so we need to add ASAN/UBSAN linker flags
             runtime_check_flags = ['-fsanitize=undefined', '-fsanitize=address']
             if self.settings.compiler == 'clang':
@@ -134,13 +151,18 @@ class MicroblinkConanFile(object):
 
 
 class MicroblinkRecognizerConanFile(MicroblinkConanFile):
-    options = dict(MicroblinkConanFile.options, **{
+    options = {
         'result_jsonization': ['Off', 'Serialization', 'SerializationAndTesting'],
         'binary_serialization': [True, False]
-    })
-    default_options = dict(MicroblinkConanFile.default_options, **{
+    }
+    default_options = {
         'result_jsonization': 'Off'
-    })
+    }
+
+    def init(self):
+        base = self.python_requires['MicroblinkConanFile'].module.MicroblinkConanFile
+        self.options.update(base.options)
+        self.default_options.update(base.default_options)
 
     def config_options(self):
         if self.options.binary_serialization == None:  # noqa: E711
@@ -175,6 +197,6 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
         self.copy('Dictionary/Dictionaries/*.zzip', dst='res')
 
 
-class MicroblinkConanFilePackage(ConanFile):
+class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "5.0.0"
+    version = "5.1.0"
