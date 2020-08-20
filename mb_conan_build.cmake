@@ -151,6 +151,22 @@ else() # in user space and user has not performed conan install command
         endif()
         list( APPEND conan_cmake_run_params PROFILE android-ndk-r${ANDROID_NDK_MAJOR}${ndk_revision_suffix}-${ANDROID_ABI} )
         set( HAVE_PROFILE ON )
+    elseif( MSVC )
+        string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
+        list( GET VERSION_LIST 0 compiler_major_version )
+        list( GET VERSION_LIST 1 compiler_minor_version )
+
+        # msvc-xx.yy profile will use Ninja generator (assumes vcvars are already set)
+        # vc-xx.yy profile will use Visual Studio generator (no vcvars required - use always latest available msvc)
+
+        set( msvc_profile_name "msvc" )
+        if ( CMAKE_GENERATOR MATCHES "Visual Studio" )
+            set( msvc_profile_name "vs" )
+        endif()
+
+        list( APPEND conan_cmake_run_params PROFILE ${msvc_profile_name}-${compiler_major_version}.${compiler_minor_version} )
+
+        set( HAVE_PROFILE ON )
     elseif( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
         list( GET VERSION_LIST 0 compiler_major_version )
@@ -233,8 +249,8 @@ else() # in user space and user has not performed conan install command
     endif()
 
     if ( HAVE_PROFILE )
-        # use automatically detected build type when using profile
-        list( APPEND conan_cmake_run_params PROFILE_AUTO build_type )
+        # use automatically detected build type and runtime when using profile
+        list( APPEND conan_cmake_run_params PROFILE_AUTO build_type compiler.runtime )
     endif()
 
     # other cases should be auto-detected by conan.cmake
