@@ -122,17 +122,24 @@ else() # in user space and user has not performed conan install command
     if( IOS )
         list( APPEND conan_cmake_run_params NO_OUTPUT_DIRS )
     endif()
-    # install development version of packages if MB_DEV_RELEASE or building in debug mode
-    if( MB_DEV_RELEASE OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-        list( APPEND conan_cmake_run_params BUILD_TYPE "${build_type_debug}" )
-    endif()
 
     if ( MB_DEV_RELEASE AND CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT CMAKE_BUILD_TYPE )
         set( CMAKE_BUILD_TYPE Debug ) # required to correctly detect VS runtime toolset
     endif()
 
-    if ( CONAN_CMAKE_MULTI AND NOT MB_DEV_RELEASE )
-        list( APPEND conan_cmake_run_params CONFIGURATION_TYPES "${build_type_debug};${build_type_release}" )
+    if ( CONAN_CMAKE_MULTI )
+        if ( MB_DEV_RELEASE )
+            # install development version of packages if MB_DEV_RELEASE or building in debug mode
+            list( APPEND conan_cmake_run_params BUILD_TYPE "${build_type_debug}" )
+        else()
+            list( APPEND conan_cmake_run_params CONFIGURATION_TYPES "${build_type_debug};${build_type_release}" )
+        endif()
+    else()
+        if( MB_DEV_RELEASE OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
+            list( APPEND conan_cmake_run_params BUILD_TYPE "${build_type_debug}" )
+        else()
+            list( APPEND conan_cmake_run_params BUILD_TYPE "${build_type_release}" )
+        endif()
     endif()
 
     if ( MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio" )
@@ -263,7 +270,7 @@ else() # in user space and user has not performed conan install command
 
     if ( HAVE_PROFILE )
         # use automatically detected build type and runtime when using profile
-        list( APPEND conan_cmake_run_params PROFILE_AUTO build_type compiler.runtime )
+        list( APPEND conan_cmake_run_params PROFILE_AUTO compiler.runtime )
     endif()
 
     # other cases should be auto-detected by conan.cmake
