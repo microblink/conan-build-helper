@@ -98,9 +98,9 @@ else() # in user space and user has not performed conan install command
 
     if ( DEFINED MB_ENABLE_LTO )
         if ( MB_ENABLE_LTO )
-            list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "CMakeBuild:link_time_optimization=True" )
+            list( APPEND MB_CONAN_SETUP_PARAMS SETTINGS "link_time_optimization=True" )
         else()
-            list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "CMakeBuild:link_time_optimization=False" )
+            list( APPEND MB_CONAN_SETUP_PARAMS SETTINGS "link_time_optimization=False" )
         endif()
     endif()
 
