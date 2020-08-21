@@ -96,6 +96,14 @@ else() # in user space and user has not performed conan install command
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "GTest:redirect_to_android_log=True" )
     endif()
 
+    if ( DEFINED MB_ENABLE_LTO )
+        if ( MB_ENABLE_LTO )
+            list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "CMakeBuild:link_time_optimization=True" )
+        else()
+            list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "CMakeBuild:link_time_optimization=False" )
+        endif()
+    endif()
+
     if( CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE )
         set( CONAN_CMAKE_MULTI ON )
     else()
