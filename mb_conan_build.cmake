@@ -96,6 +96,15 @@ else() # in user space and user has not performed conan install command
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "GTest:redirect_to_android_log=True" )
     endif()
 
+    set( build_type_debug   "Debug"   )
+    set( build_type_release "Release" )
+
+    if ( DEFINED MB_ENABLE_LTO )
+        if ( NOT MB_ENABLE_LTO )
+            set( build_type_release "ReleaseNoLTO" )
+        endif()
+    endif()
+
     if( CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE )
         set( CONAN_CMAKE_MULTI ON )
     else()
@@ -113,13 +122,24 @@ else() # in user space and user has not performed conan install command
     if( IOS )
         list( APPEND conan_cmake_run_params NO_OUTPUT_DIRS )
     endif()
-    # install development version of packages if MB_DEV_RELEASE or building in debug mode
-    if( MB_DEV_RELEASE OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-        list( APPEND conan_cmake_run_params BUILD_TYPE "Debug" )
-    endif()
 
     if ( MB_DEV_RELEASE AND CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT CMAKE_BUILD_TYPE )
         set( CMAKE_BUILD_TYPE Debug ) # required to correctly detect VS runtime toolset
+    endif()
+
+    if ( CONAN_CMAKE_MULTI )
+        if ( MB_DEV_RELEASE )
+            # install development version of packages if MB_DEV_RELEASE or building in debug mode
+            list( APPEND conan_cmake_run_params BUILD_TYPE "${build_type_debug}" )
+        else()
+            list( APPEND conan_cmake_run_params CONFIGURATION_TYPES "${build_type_debug};${build_type_release}" )
+        endif()
+    else()
+        if( MB_DEV_RELEASE OR CMAKE_BUILD_TYPE STREQUAL "Debug" )
+            list( APPEND conan_cmake_run_params BUILD_TYPE "${build_type_debug}" )
+        else()
+            list( APPEND conan_cmake_run_params BUILD_TYPE "${build_type_release}" )
+        endif()
     endif()
 
     if ( MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio" )
@@ -250,6 +270,7 @@ else() # in user space and user has not performed conan install command
 
     if ( HAVE_PROFILE )
         # use automatically detected build type and runtime when using profile
+        # this also allow overwriting build_type and compiler.runtime from command line, instead of using values from profile
         list( APPEND conan_cmake_run_params PROFILE_AUTO build_type compiler.runtime )
     endif()
 
