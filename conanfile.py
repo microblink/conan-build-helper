@@ -94,14 +94,6 @@ class MicroblinkConanFile(object):
         self.package_public_headers()
         self.package_all_libraries()
 
-    def build_id(self):
-        if self.info_build.settings.os is not None:
-            if self.settings.os == 'iOS':
-                self.info_build.settings.arch = 'ios_fat'
-                self.info_build.settings.os.version = '8.0'
-            if self.settings.os == 'Android':
-                self.info_build.settings.os.api_level = 16
-
     def imports(self):
         self.copy("*.dll", "", "bin")
         self.copy("*.dylib", "", "lib")
@@ -199,4 +191,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "6.0.0"
+    version = "6.0.1"
