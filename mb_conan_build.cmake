@@ -96,11 +96,12 @@ else() # in user space and user has not performed conan install command
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "GTest:redirect_to_android_log=True" )
     endif()
 
+    set( build_type_debug "Debug"     )
+    set( build_type_release "Release" )
+
     if ( DEFINED MB_ENABLE_LTO )
-        if ( MB_ENABLE_LTO )
-            list( APPEND MB_CONAN_SETUP_PARAMS SETTINGS "link_time_optimization=True" )
-        else()
-            list( APPEND MB_CONAN_SETUP_PARAMS SETTINGS "link_time_optimization=False" )
+        if ( NOT MB_ENABLE_LTO )
+            set( build_type_release "ReleaseNoLTO" )
         endif()
     endif()
 
@@ -123,11 +124,15 @@ else() # in user space and user has not performed conan install command
     endif()
     # install development version of packages if MB_DEV_RELEASE or building in debug mode
     if( MB_DEV_RELEASE OR "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" )
-        list( APPEND conan_cmake_run_params BUILD_TYPE "Debug" )
+        list( APPEND conan_cmake_run_params BUILD_TYPE "${build_type_debug}" )
     endif()
 
     if ( MB_DEV_RELEASE AND CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT CMAKE_BUILD_TYPE )
         set( CMAKE_BUILD_TYPE Debug ) # required to correctly detect VS runtime toolset
+    endif()
+
+    if ( CONAN_CMAKE_MULTI AND NOT MB_DEV_RELEASE )
+        list( APPEND conan_cmake_run_params CONFIGURATION_TYPES "${build_type_debug};${build_type_release}" )
     endif()
 
     if ( MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio" )
