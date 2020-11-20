@@ -71,7 +71,7 @@ class MicroblinkConanFile(ConanFile):
             # copy fat libraries
             self.copy("*Release/*.a", dst="lib", keep_path=False)
         else:
-            self.copy("*.a", dst="lib", keep_path=False)
+            self.copy("*.a", src='lib', dst="lib", keep_path=False)
 
 
     def package(self):
