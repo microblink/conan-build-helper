@@ -160,7 +160,12 @@ else() # in user space and user has not performed conan install command
         list( GET VERSION_LIST 1 apple_clang_minor_version  )
         list( GET VERSION_LIST 2 apple_clang_bugfix_version )
 
-        list( APPEND conan_cmake_run_params PROFILE ios-clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
+        set( ios_sdk "" )
+        if ( DEFINED MB_IOS_SDK )
+            set( ios_sdk "${MB_IOS_SDK}-" )
+        endif()
+
+        list( APPEND conan_cmake_run_params PROFILE ios-${ios_sdk}clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
         set( HAVE_PROFILE ON )
     elseif( ANDROID )
         set( ndk_revision_suffix )
