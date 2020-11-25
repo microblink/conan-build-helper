@@ -161,7 +161,10 @@ else() # in user space and user has not performed conan install command
         list( GET VERSION_LIST 2 apple_clang_bugfix_version )
 
         set( ios_sdk "" )
-        if ( DEFINED MB_IOS_SDK )
+        if ( MB_MODERN_APPLE_BUILD )
+            if ( NOT DEFINED MB_IOS_SDK )
+                message( FATAL_ERROR "iOS build with modern apple build requies MB_IOS_SDK to be set to either 'device', 'simulator' or 'maccatalyst'" )
+            endif()
             set( ios_sdk "${MB_IOS_SDK}-" )
         endif()
 
@@ -228,7 +231,18 @@ else() # in user space and user has not performed conan install command
         list( GET VERSION_LIST 1 apple_clang_minor_version  )
         list( GET VERSION_LIST 2 apple_clang_bugfix_version )
 
-        list( APPEND conan_cmake_run_params PROFILE macos-clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
+        if ( MB_MODERN_APPLE_BUILD )
+            set( macos_profile_name macos-xcode-fat-clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
+        else()
+            if ( CMAKE_SYSTEM_PROCESSOR MATCHES "^(AMD64|x86_64)$" )
+                set( mac_arch x64 )
+            else()
+                set( mac_arch arm64 )
+            endif()
+            set( macos_profile_name macos-ninja-${mac_arch}-clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
+        endif()
+
+        list( APPEND conan_cmake_run_params PROFILE ${macos_profile_name} )
         set( HAVE_PROFILE ON )
     elseif( EMSCRIPTEN )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
