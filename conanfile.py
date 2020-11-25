@@ -68,7 +68,23 @@ class MicroblinkConanFile(object):
         # this makes packages forward compatible with future compiler updates
         args.append('-DMB_TREAT_WARNINGS_AS_ERRORS=OFF')
         cmake.configure(args=args)
-        cmake.build()
+        if self.settings.os == 'iOS':
+            if self.settings.os.sdk != None:  # noqa: E711
+                if self.settings.os.sdk == 'device':
+                    cmake.build(args=['--', '-sdk', 'iphoneos', 'ONLY_ACTIVE_ARCH=NO'])
+                elif self.settings.os.sdk == 'simulator':
+                    cmake.build(args=['--', '-sdk', 'iphonesimulator', 'ONLY_ACTIVE_ARCH=NO'])
+                elif self.settings.os.sdk == 'maccatalyst':
+                    # CMake currently does not support invoking Mac Catalyst builds
+                    self.run(
+                        "xcodebuild build -configuration Release -scheme ALL_BUILD " +
+                        "-destination 'platform=macOS,variant=Mac Catalyst' ONLY_ACTIVE_ARCH=NO"
+                    )
+            else:
+                # backward compatibility with old iOS toolchain and CMakeBuild < 12.0.0
+                cmake.build()
+        else:
+            cmake.build()
 
     def build(self):
         self.build_with_args([])
@@ -85,8 +101,20 @@ class MicroblinkConanFile(object):
             self.copy("*.pdb", dst="lib", keep_path=False)
 
         if self.settings.os == 'iOS':
-            # copy fat libraries
-            self.copy("*Release/*.a", dst="lib", keep_path=False)
+            if self.settings.os.sdk != None:  # noqa: E711
+                if self.settings.os.sdk == 'device':
+                    self.copy("Release-iphoneos/*.a", dst="lib", keep_path=False)
+                elif self.settings.os.sdk == 'simulator':
+                    self.copy("Release-iphonesimulator/*.a", dst="lib", keep_path=False)
+                elif self.settings.os.sdk == 'maccatalyst':
+                    self.copy("Release-maccatalyst/*.a", dst="lib", keep_path=False)
+                # Cases when add_subdirectory is used (GTest, cpuinfo)
+                self.copy("*.a", src='lib', dst="lib", keep_path=False)
+            else:
+                # First copy device-only libraries (in case fat won't exists (i.e. CMakeBuild >= 12.0.0 is used))
+                self.copy("Release-iphoneos/*.a", dst="lib", keep_path=False)
+                # copy fat libraries if they exist (and overwrite those copied in previous step)
+                self.copy("*Release/*.a", dst="lib", keep_path=False)
         else:
             self.copy("*.a", src='lib', dst="lib", keep_path=False)
 
@@ -106,10 +134,6 @@ class MicroblinkConanFile(object):
         del self.info.options.enable_testing
 
     def common_settings_for_package_id(self):
-        # Apple has fat libraries, so no need for having separate packages
-        if self.settings.os == 'iOS':
-            self.info.settings.arch = "ios_fat"
-
         # Conan uses semver_mode by default for all dependencies. However,
         # we want some specific dependencies to be used in full_package mode,
         # most notably header only libraries.
@@ -191,4 +215,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "6.0.2"
+    version = "7.0.0"
