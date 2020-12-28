@@ -289,6 +289,14 @@ else() # in user space and user has not performed conan install command
                 list( APPEND conan_cmake_run_params SETTINGS os.simd=false )
             endif()
         endif()
+
+        if ( DEFINED MB_EMSCRIPTEN_ADVANCED_FEATURES )
+            if ( MB_EMSCRIPTEN_ADVANCED_FEATURES )
+                list( APPEND conan_cmake_run_params SETTINGS os.advanced_wasm=true )
+            else()
+                list( APPEND conan_cmake_run_params SETTINGS os.advanced_wasm=false )
+            endif()
+        endif()
     endif()
 
     if( MB_CONAN_SETUP_PARAMS )
