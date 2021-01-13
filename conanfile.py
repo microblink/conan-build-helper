@@ -95,26 +95,31 @@ class MicroblinkConanFile(object):
     def package_public_headers(self):
         self.copy("*.h*", dst="include", src=f"{self.name}/Include")
 
-    def package_all_libraries(self):
+    def package_all_libraries(self, subfolders=['']):
         if self.settings.os == 'Windows':
             self.copy("*.lib", dst="lib", keep_path=False)
             self.copy("*.pdb", dst="lib", keep_path=False)
 
         if self.settings.os == 'iOS':
-            if self.settings.os.sdk != None:  # noqa: E711
-                if self.settings.os.sdk == 'device':
-                    self.copy("Release-iphoneos/*.a", dst="lib", keep_path=False)
-                elif self.settings.os.sdk == 'simulator':
-                    self.copy("Release-iphonesimulator/*.a", dst="lib", keep_path=False)
-                elif self.settings.os.sdk == 'maccatalyst':
-                    self.copy("Release-maccatalyst/*.a", dst="lib", keep_path=False)
-                # Cases when add_subdirectory is used (GTest, cpuinfo)
-                self.copy("*.a", src='lib', dst="lib", keep_path=False)
-            else:
-                # First copy device-only libraries (in case fat won't exists (i.e. CMakeBuild >= 12.0.0 is used))
-                self.copy("Release-iphoneos/*.a", dst="lib", keep_path=False)
-                # copy fat libraries if they exist (and overwrite those copied in previous step)
-                self.copy("*Release/*.a", dst="lib", keep_path=False)
+            for subfolder in subfolders:
+                if subfolder != '':
+                    prefix = f'{subfolder}/'
+                else:
+                    prefix = ''
+                if self.settings.os.sdk != None:  # noqa: E711
+                    if self.settings.os.sdk == 'device':
+                        self.copy(f"{prefix}Release-iphoneos/*.a", dst="lib", keep_path=False)
+                    elif self.settings.os.sdk == 'simulator':
+                        self.copy(f"{prefix}Release-iphonesimulator/*.a", dst="lib", keep_path=False)
+                    elif self.settings.os.sdk == 'maccatalyst':
+                        self.copy(f"{prefix}Release-maccatalyst/*.a", dst="lib", keep_path=False)
+                    # Cases when add_subdirectory is used (GTest, cpuinfo)
+                    self.copy("*.a", src='lib', dst="lib", keep_path=False)
+                else:
+                    # First copy device-only libraries (in case fat won't exists (i.e. CMakeBuild >= 12.0.0 is used))
+                    self.copy(f"{prefix}Release-iphoneos/*.a", dst="lib", keep_path=False)
+                    # copy fat libraries if they exist (and overwrite those copied in previous step)
+                    self.copy("*Release/*.a", dst="lib", keep_path=False)
         else:
             self.copy("*.a", src='lib', dst="lib", keep_path=False)
 
@@ -215,4 +220,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "7.0.0"
+    version = "7.1.0"
