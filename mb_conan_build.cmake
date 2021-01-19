@@ -116,7 +116,8 @@ else() # in user space and user has not performed conan install command
         set( CMAKE_BUILD_TYPE Release )
     endif()
 
-    remote_include( "conan.cmake" "http://raw.githubusercontent.com/microblink/cmake-conan/v0.15.1/conan.cmake" "http://files.microblink.com/conan.cmake" )
+    # remote_include( "conan.cmake" "http://raw.githubusercontent.com/microblink/cmake-conan/v0.15.1/conan.cmake" "http://files.microblink.com/conan.cmake" )
+    remote_include( "conan.cmake" "http://raw.githubusercontent.com/microblink/cmake-conan/master/conan.cmake" "http://files.microblink.com/conan.cmake" )
 
     set( conan_cmake_run_params BASIC_SETUP CMAKE_TARGETS )
     if( IOS )
@@ -307,6 +308,10 @@ else() # in user space and user has not performed conan install command
         # use automatically detected build type and runtime when using profile
         # this also allow overwriting build_type and compiler.runtime from command line, instead of using values from profile
         list( APPEND conan_cmake_run_params PROFILE_AUTO build_type compiler.runtime )
+        if ( CMAKE_CROSSCOMPILING )
+            # if cross-compiling, set the default profile for the build profile (used for building host tools)
+            list( APPEND conan_cmake_run_params PROFILE_BUILD default )
+        endif()
     endif()
 
     # other cases should be auto-detected by conan.cmake
