@@ -308,7 +308,7 @@ else() # in user space and user has not performed conan install command
         # use automatically detected build type and runtime when using profile
         # this also allow overwriting build_type and compiler.runtime from command line, instead of using values from profile
         list( APPEND conan_cmake_run_params PROFILE_AUTO build_type compiler.runtime )
-        if ( CMAKE_CROSSCOMPILING )
+        if ( CMAKE_CROSSCOMPILING AND MB_USE_BUILD_PROFILE )
             # if cross-compiling, set the default profile for the build profile (used for building host tools)
             list( APPEND conan_cmake_run_params PROFILE_BUILD default )
         endif()
