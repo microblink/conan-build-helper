@@ -116,8 +116,7 @@ else() # in user space and user has not performed conan install command
         set( CMAKE_BUILD_TYPE Release )
     endif()
 
-    # remote_include( "conan.cmake" "http://raw.githubusercontent.com/microblink/cmake-conan/v0.15.1/conan.cmake" "http://files.microblink.com/conan.cmake" )
-    remote_include( "conan.cmake" "http://raw.githubusercontent.com/microblink/cmake-conan/master/conan.cmake" "http://files.microblink.com/conan.cmake" )
+    remote_include( "conan.cmake" "http://raw.githubusercontent.com/microblink/cmake-conan/v0.16.0/conan.cmake" "http://files.microblink.com/conan.cmake" )
 
     set( conan_cmake_run_params BASIC_SETUP CMAKE_TARGETS )
     if( IOS )
