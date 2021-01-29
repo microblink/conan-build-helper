@@ -61,7 +61,8 @@ class MicroblinkConanFile(object):
             args.extend(['-DCMAKE_BUILD_TYPE=Release', '-DMB_DEV_RELEASE=ON'])
             # runtime checks on Android require rooted device, and on iOS special
             # checkbox enabled that we currently do not support setting via CMake
-            if self.settings.os != 'iOS' and self.settings.os != 'Android':
+            # on Emscripten, it's utterly slow and does not work with SAFE_HEAP
+            if self.settings.os != 'iOS' and self.settings.os != 'Android' and self.settings.os != 'Emscripten':
                 args.append('-DMB_ENABLE_RUNTIME_CHECKS=ON')
 
         self.add_base_args(args)
@@ -220,4 +221,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "7.1.0"
+    version = "7.2.0"
