@@ -192,6 +192,16 @@ else() # in user space and user has not performed conan install command
         list( GET VERSION_LIST 0 compiler_major_version )
         list( GET VERSION_LIST 1 compiler_minor_version )
 
+        set( profile_suffix "" )
+        # handle special case for VS 16.8 and 16.9 - they both have MSVC 19.28
+        if ( ${compiler_major_version} EQUAL 19 AND ${compiler_minor_version} EQUAL 28 )
+            list( GET VERSION_LIST 2 compiler_bugfix_version )
+            # based on comment by Sunny: https://developercommunity.visualstudio.com/t/the-169-cc-compiler-still-uses-the-same-version-nu/1335194#T-N1337120
+            if ( ${compiler_bugfix_version} LESS 29500 )
+                set( profile_suffix "-16.8" )
+            endif()
+        endif()
+
         # msvc-xx.yy profile will use Ninja generator (assumes vcvars are already set)
         # vc-xx.yy profile will use Visual Studio generator (no vcvars required - use always latest available msvc)
 
@@ -200,7 +210,7 @@ else() # in user space and user has not performed conan install command
             set( msvc_profile_name "vs" )
         endif()
 
-        list( APPEND conan_cmake_run_params PROFILE ${msvc_profile_name}-${compiler_major_version}.${compiler_minor_version} )
+        list( APPEND conan_cmake_run_params PROFILE ${msvc_profile_name}-${compiler_major_version}.${compiler_minor_version}${profile_suffix} )
 
         set( HAVE_PROFILE ON )
     elseif( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
