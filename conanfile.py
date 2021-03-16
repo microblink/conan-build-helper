@@ -147,7 +147,9 @@ class MicroblinkConanFile(object):
         full_package_mode_deps = {
             'Boost',
             'Eigen',
+            'Functionoid',
             'range-v3',
+            'Sweater',
             'RapidJSON',
             'UTFCpp',
             'Variant'
@@ -221,4 +223,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "7.2.0"
+    version = "7.3.0"
