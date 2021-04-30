@@ -6,7 +6,7 @@ option( Recognizer_BINARY_SERIALIZATION "Enable binary serialization of results 
 option( Recognizer_ENABLE_IMSHOW "Enable imshow" OFF )
 
 if( NOT CONAN_EXPORTED )
-    list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "result_jsonization=${Recognizer_RESULT_JSONIZATION}" "Protection:all_keys=True" "MVToolset:enable_image_io=True" )
+    list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "result_jsonization=${Recognizer_RESULT_JSONIZATION}" "Protection:all_keys=True" )
     if ( Recognizer_BINARY_SERIALIZATION )
         list( APPEND MB_CONAN_SETUP_PARAMS OPTIONS "binary_serialization=True" )
     endif()
