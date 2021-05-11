@@ -96,33 +96,37 @@ class MicroblinkConanFile(object):
     def package_public_headers(self):
         self.copy("*.h*", dst="include", src=f"{self.name}/Include")
 
-    def package_all_libraries(self, subfolders=['']):
-        if self.settings.os == 'Windows':
-            self.copy("*.lib", dst="lib", keep_path=False)
-            self.copy("*.pdb", dst="lib", keep_path=False)
+    def package_custom_libraries(self, libs, subfolders=['']):
+        for lib in libs:
+            if self.settings.os == 'Windows':
+                self.copy(f"{lib}.lib", src="lib", dst="lib", keep_path=False)
+                self.copy(f"{lib}.pdb", src="lib", dst="lib", keep_path=False)
 
-        if self.settings.os == 'iOS':
-            for subfolder in subfolders:
-                if subfolder != '':
-                    prefix = f'{subfolder}/'
-                else:
-                    prefix = ''
-                if self.settings.os.sdk != None:  # noqa: E711
-                    if self.settings.os.sdk == 'device':
-                        self.copy(f"{prefix}Release-iphoneos/*.a", dst="lib", keep_path=False)
-                    elif self.settings.os.sdk == 'simulator':
-                        self.copy(f"{prefix}Release-iphonesimulator/*.a", dst="lib", keep_path=False)
-                    elif self.settings.os.sdk == 'maccatalyst':
-                        self.copy(f"{prefix}Release-maccatalyst/*.a", dst="lib", keep_path=False)
-                    # Cases when add_subdirectory is used (GTest, cpuinfo)
-                    self.copy("*.a", src='lib', dst="lib", keep_path=False)
-                else:
-                    # First copy device-only libraries (in case fat won't exists (i.e. CMakeBuild >= 12.0.0 is used))
-                    self.copy(f"{prefix}Release-iphoneos/*.a", dst="lib", keep_path=False)
-                    # copy fat libraries if they exist (and overwrite those copied in previous step)
-                    self.copy("*Release/*.a", dst="lib", keep_path=False)
-        else:
-            self.copy("*.a", src='lib', dst="lib", keep_path=False)
+            if self.settings.os == 'iOS':
+                for subfolder in subfolders:
+                    if subfolder != '':
+                        prefix = f'{subfolder}/'
+                    else:
+                        prefix = ''
+                    if self.settings.os.sdk != None:  # noqa: E711
+                        if self.settings.os.sdk == 'device':
+                            self.copy(f"{prefix}Release-iphoneos/{lib}.a", dst="lib", keep_path=False)
+                        elif self.settings.os.sdk == 'simulator':
+                            self.copy(f"{prefix}Release-iphonesimulator/{lib}.a", dst="lib", keep_path=False)
+                        elif self.settings.os.sdk == 'maccatalyst':
+                            self.copy(f"{prefix}Release-maccatalyst/{lib}.a", dst="lib", keep_path=False)
+                        # Cases when add_subdirectory is used (GTest, cpuinfo)
+                        self.copy(f"{lib}.a", src='lib', dst="lib", keep_path=False)
+                    else:
+                        # First copy device-only libraries (in case fat won't exists (i.e. CMakeBuild >= 12.0.0 is used))
+                        self.copy(f"{prefix}Release-iphoneos/{lib}.a", dst="lib", keep_path=False)
+                        # copy fat libraries if they exist (and overwrite those copied in previous step)
+                        self.copy(f"*Release/{lib}.a", dst="lib", keep_path=False)
+            else:
+                self.copy(f"{lib}.a", src='lib', dst="lib", keep_path=False)
+
+    def package_all_libraries(self, subfolders=['']):
+        package_custom_libraries( ['*'], subfolders )
 
     def package(self):
         self.package_public_headers()
