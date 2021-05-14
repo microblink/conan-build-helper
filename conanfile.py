@@ -118,7 +118,8 @@ class MicroblinkConanFile(object):
                         # Cases when add_subdirectory is used (GTest, cpuinfo)
                         self.copy(f"{lib}.a", src='lib', dst="lib", keep_path=False)
                     else:
-                        # First copy device-only libraries (in case fat won't exists (i.e. CMakeBuild >= 12.0.0 is used))
+                        # First copy device-only libraries (in case fat won't exists
+                        # (i.e. CMakeBuild >= 12.0.0 is used))
                         self.copy(f"{prefix}Release-iphoneos/{lib}.a", dst="lib", keep_path=False)
                         # copy fat libraries if they exist (and overwrite those copied in previous step)
                         self.copy(f"*Release/{lib}.a", dst="lib", keep_path=False)
@@ -126,7 +127,7 @@ class MicroblinkConanFile(object):
                 self.copy(f"{lib}.a", src='lib', dst="lib", keep_path=False)
 
     def package_all_libraries(self, subfolders=['']):
-        package_custom_libraries( ['*'], subfolders )
+        self.package_custom_libraries(['*'], subfolders)
 
     def package(self):
         self.package_public_headers()
@@ -227,4 +228,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "7.3.0"
+    version = "7.4.0"
