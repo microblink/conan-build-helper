@@ -100,7 +100,7 @@ class MicroblinkConanFile(object):
         for lib in libs:
             if self.settings.os == 'Windows':
                 self.copy(f"{lib}.lib", src="lib", dst="lib", keep_path=False)
-                self.copy(f"{lib}.pdb", src="lib", dst="lib", keep_path=False)
+                self.copy(f"*{lib}.pdb", src="lib", dst="lib", keep_path=False)
 
             if self.settings.os == 'iOS':
                 for subfolder in subfolders:
@@ -228,4 +228,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "7.4.0"
+    version = "7.4.1"
