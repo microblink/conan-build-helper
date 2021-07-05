@@ -215,8 +215,9 @@ else() # in user space and user has not performed conan install command
         set( HAVE_PROFILE ON )
     elseif( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
-        list( GET VERSION_LIST 0 compiler_major_version )
-        list( GET VERSION_LIST 1 compiler_minor_version )
+        list( GET VERSION_LIST 0 compiler_major_version  )
+        list( GET VERSION_LIST 1 compiler_minor_version  )
+        list( GET VERSION_LIST 2 compiler_bugfix_version )
 
         set( linux_optimization_suffix )
         if ( DEFINED MB_INTEL_OPTIMIZATION AND NOT MB_INTEL_OPTIMIZATION STREQUAL "generic" )
@@ -224,7 +225,7 @@ else() # in user space and user has not performed conan install command
         endif()
 
         if( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" )
-            list( APPEND conan_cmake_run_params PROFILE clang${compiler_major_version}-linux${linux_optimization_suffix} )
+            list( APPEND conan_cmake_run_params PROFILE clang-${compiler_major_version}.${compiler_minor_version}.${compiler_bugfix_version}-linux${linux_optimization_suffix} )
         else()
             list( APPEND conan_cmake_run_params PROFILE gcc-${compiler_major_version}.${compiler_minor_version}-linux${linux_optimization_suffix} )
             option( MB_USE_GCC_CXX11_ABI "Use modern CXX11 ABI for GCC builds" ON )
