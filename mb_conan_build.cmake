@@ -201,6 +201,15 @@ else() # in user space and user has not performed conan install command
                 set( profile_suffix "-16.8" )
             endif()
         endif()
+        # handle special case for VS 16.10 and 16.11 - they both have MSVC 19.29
+        if ( ${compiler_major_version} EQUAL 19 AND ${compiler_minor_version} EQUAL 29 )
+            list( GET VERSION_LIST 2 compiler_bugfix_version )
+            # based on comment by Sunny: https://developercommunity.visualstudio.com/t/how-to-select-vs-168-compiler-with-vcvars-after-up/1359197?from=email&viewtype=all#T-ND1460890
+            if ( ${compiler_bugfix_version} GREATER 30129 )
+                set( profile_suffix "-16.11" )
+            endif()
+        endif()
+
 
         # msvc-xx.yy profile will use Ninja generator (assumes vcvars are already set)
         # vc-xx.yy profile will use Visual Studio generator (no vcvars required - use always latest available msvc)
