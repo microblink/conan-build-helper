@@ -271,11 +271,7 @@ else() # in user space and user has not performed conan install command
     elseif( EMSCRIPTEN )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
         list( GET VERSION_LIST 0 clang_major_version  )
-        set( emscripten_backend "upstream" )
-        if ( ${clang_major_version} EQUAL 6 )
-            set( emscripten_backend "fastcomp" )
-        endif()
-        list( APPEND conan_cmake_run_params PROFILE emscripten-${EMSCRIPTEN_VERSION}-${emscripten_backend} )
+        list( APPEND conan_cmake_run_params PROFILE emscripten-${EMSCRIPTEN_VERSION}-upstream )
         set( HAVE_PROFILE ON )
 
         if ( DEFINED MB_EMSCRIPTEN_COMPILE_TO_WEBASSEMBLY )
@@ -292,18 +288,6 @@ else() # in user space and user has not performed conan install command
             else()
                 list( APPEND conan_cmake_run_params SETTINGS os.threads=false )
             endif()
-        endif()
-
-        if ( DEFINED MB_EMSCRIPTEN_USE_WEBGL2 )
-            if ( MB_EMSCRIPTEN_USE_WEBGL2 )
-                list( APPEND conan_cmake_run_params SETTINGS os.webGLVersion=2 )
-            else()
-                list( APPEND conan_cmake_run_params SETTINGS os.webGLVersion=1 )
-            endif()
-        endif()
-
-        if ( DEFINED MB_EMSCRIPTEN_TARGET_ENVIRONMENT )
-            list( APPEND conan_cmake_run_params SETTINGS os.environment=${MB_EMSCRIPTEN_TARGET_ENVIRONMENT} )
         endif()
 
         if ( DEFINED MB_EMSCRIPTEN_SIMD )
