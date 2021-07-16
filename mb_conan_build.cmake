@@ -186,6 +186,10 @@ else() # in user space and user has not performed conan install command
             set( ndk_revision_suffix g )
         endif()
         list( APPEND conan_cmake_run_params PROFILE android-ndk-r${ANDROID_NDK_MAJOR}${ndk_revision_suffix}-${ANDROID_ABI} )
+        # support building with standard NDK STL
+        if ( DEFINED MB_ANDROID_USE_CUSTOM_STL AND NOT MB_ANDROID_USE_CUSTOM_STL )
+            list( APPEND conan_cmake_run_params SETTINGS os.stl_abi=standard )
+        endif()
         set( HAVE_PROFILE ON )
     elseif( MSVC )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
