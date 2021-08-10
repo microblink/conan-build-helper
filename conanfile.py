@@ -151,13 +151,16 @@ class MicroblinkConanFile(object):
         # Dependency user can always override this default behaviour.
         full_package_mode_deps = {
             'Boost',
+            'ConfigEx',
             'Eigen',
+            'Err',
             'Functionoid',
-            'range-v3',
-            'Sweater',
+            'Pimpl',
             'RapidJSON',
+            'Sweater',
             'UTFCpp',
-            'Variant'
+            'Variant',
+            'range-v3',
         }
         for r in self.requires:
             if r in full_package_mode_deps:
@@ -228,4 +231,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "7.4.1"
+    version = "7.4.2"
