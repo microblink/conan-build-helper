@@ -87,6 +87,27 @@ class MicroblinkConanFile(object):
         else:
             cmake.build()
 
+    def cmake_install(self):
+        # always build release, whether full release or dev-release (in debug mode)
+        cmake = CMake(self, build_type='Release')
+        if self.settings.os == 'iOS':
+            if self.settings.os.sdk != None:  # noqa: E711
+                if self.settings.os.sdk == 'device':
+                    cmake.install(args=['--', '-sdk', 'iphoneos', 'ONLY_ACTIVE_ARCH=NO'])
+                elif self.settings.os.sdk == 'simulator':
+                    cmake.install(args=['--', '-sdk', 'iphonesimulator', 'ONLY_ACTIVE_ARCH=NO'])
+                elif self.settings.os.sdk == 'maccatalyst':
+                    # CMake currently does not support invoking Mac Catalyst builds
+                    self.run(
+                        "xcodebuild build -configuration Release -scheme install " +
+                        "-destination 'platform=macOS,variant=Mac Catalyst' ONLY_ACTIVE_ARCH=NO"
+                    )
+            else:
+                # backward compatibility with old iOS toolchain and CMakeBuild < 12.0.0
+                cmake.install()
+        else:
+            cmake.install()
+
     def build(self):
         self.build_with_args([])
 
@@ -231,4 +252,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "7.4.2"
+    version = "7.5.0"
