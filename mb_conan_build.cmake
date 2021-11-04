@@ -170,6 +170,9 @@ else() # in user space and user has not performed conan install command
 
         list( APPEND conan_cmake_run_params PROFILE ios-${ios_sdk}clang-${apple_clang_major_version}.${apple_clang_minor_version}.${apple_clang_bugfix_version} )
         set( HAVE_PROFILE ON )
+        if ( MB_IOS_SUPPORT_32BIT_BUILD )
+            list( APPEND conan_cmake_run_params SETTINGS os.version=9.0 )
+        endif()
     elseif( ANDROID )
         set( ndk_revision_suffix )
         if ( ANDROID_NDK_MINOR EQUAL 1 )
