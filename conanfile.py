@@ -35,6 +35,11 @@ class MicroblinkConanFile(object):
     generators = "cmake"
     no_copy_source = True
 
+    def configure(self):
+        # iOS and MacOS have fat binaries, so those packages don't depend on arch setting
+        if self.settings.os in ['iOS', 'Macos']:
+            del self.settings.arch
+
     def add_base_args(self, args):
         if 'log_level' in self.options:
             if self.options.log_level == 'Verbose':
@@ -178,7 +183,6 @@ class MicroblinkConanFile(object):
             'Functionoid',
             'Pimpl',
             'RapidJSON',
-            'Sweater',
             'UTFCpp',
             'Variant',
             'range-v3',
@@ -225,6 +229,7 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
                 self.options.binary_serialization = False
 
     def configure(self):
+        super().configure()
         self.options['*'].result_jsonization = self.options.result_jsonization
         self.options['*'].binary_serialization = self.options.binary_serialization
         self.options['*'].enable_testing = self.options.enable_testing
@@ -252,4 +257,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "7.5.0"
+    version = "8.0.0"
