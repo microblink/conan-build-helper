@@ -239,6 +239,9 @@ else() # in user space and user has not performed conan install command
         if ( DEFINED MB_INTEL_OPTIMIZATION AND NOT MB_INTEL_OPTIMIZATION STREQUAL "generic" )
             set( linux_optimization_suffix "-${MB_INTEL_OPTIMIZATION}" )
         endif()
+        if ( CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" )
+            set( linux_optimization_suffix "-arm64" )
+        endif()
 
         if( "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" )
             list( APPEND conan_cmake_run_params PROFILE clang-${compiler_major_version}.${compiler_minor_version}.${compiler_bugfix_version}-linux${linux_optimization_suffix} )
