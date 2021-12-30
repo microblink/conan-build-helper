@@ -226,7 +226,7 @@ else() # in user space and user has not performed conan install command
                 set( msvc_profile_name "vs" )
             endif()
 
-            if ( CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64" )
+            if ( $ENV{PROCESSOR_ARCHITECTURE} STREQUAL "ARM64" )
                 set( profile_suffix "${profile_suffix}-arm64" )
             endif()
 
@@ -235,7 +235,7 @@ else() # in user space and user has not performed conan install command
             set( HAVE_PROFILE ON )
         else()
             set( profile_suffix "" )
-            if ( CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64" )
+            if ( $ENV{PROCESSOR_ARCHITECTURE} STREQUAL "ARM64" )
                 set( profile_suffix "-arm64" )
             endif()
             list( APPEND conan_cmake_run_params PROFILE clang-${compiler_major_version}.${compiler_minor_version}.${compiler_bugfix_version}-windows${profile_suffix} )
