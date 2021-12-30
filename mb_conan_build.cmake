@@ -142,7 +142,7 @@ else() # in user space and user has not performed conan install command
         endif()
     endif()
 
-    if ( MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio" )
+    if ( MSVC AND NOT CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang" )
         if ( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR MB_DEV_RELEASE )
             # set compiler runtime to MDd
             list( APPEND conan_cmake_run_params SETTINGS compiler.runtime=MDd )
@@ -198,37 +198,45 @@ else() # in user space and user has not performed conan install command
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
         list( GET VERSION_LIST 0 compiler_major_version )
         list( GET VERSION_LIST 1 compiler_minor_version )
+        list( GET VERSION_LIST 2 compiler_bugfix_version )
 
-        set( profile_suffix "" )
-        # handle special case for VS 16.8 and 16.9 - they both have MSVC 19.28
-        if ( ${compiler_major_version} EQUAL 19 AND ${compiler_minor_version} EQUAL 28 )
-            list( GET VERSION_LIST 2 compiler_bugfix_version )
-            # based on comment by Sunny: https://developercommunity.visualstudio.com/t/the-169-cc-compiler-still-uses-the-same-version-nu/1335194#T-N1337120
-            if ( ${compiler_bugfix_version} LESS 29500 )
-                set( profile_suffix "-16.8" )
+        if ( CMAKE_CXX_COMPILER_ID STREQUAL MSVC )
+            set( profile_suffix "" )
+            # handle special case for VS 16.8 and 16.9 - they both have MSVC 19.28
+            if ( ${compiler_major_version} EQUAL 19 AND ${compiler_minor_version} EQUAL 28 )
+                # based on comment by Sunny: https://developercommunity.visualstudio.com/t/the-169-cc-compiler-still-uses-the-same-version-nu/1335194#T-N1337120
+                if ( ${compiler_bugfix_version} LESS 29500 )
+                    set( profile_suffix "-16.8" )
+                endif()
             endif()
-        endif()
-        # handle special case for VS 16.10 and 16.11 - they both have MSVC 19.29
-        if ( ${compiler_major_version} EQUAL 19 AND ${compiler_minor_version} EQUAL 29 )
-            list( GET VERSION_LIST 2 compiler_bugfix_version )
-            # based on comment by Sunny: https://developercommunity.visualstudio.com/t/how-to-select-vs-168-compiler-with-vcvars-after-up/1359197?from=email&viewtype=all#T-ND1460890
-            if ( ${compiler_bugfix_version} GREATER 30129 )
-                set( profile_suffix "-16.11" )
+            # handle special case for VS 16.10 and 16.11 - they both have MSVC 19.29
+            if ( ${compiler_major_version} EQUAL 19 AND ${compiler_minor_version} EQUAL 29 )
+                # based on comment by Sunny: https://developercommunity.visualstudio.com/t/how-to-select-vs-168-compiler-with-vcvars-after-up/1359197?from=email&viewtype=all#T-ND1460890
+                if ( ${compiler_bugfix_version} GREATER 30129 )
+                    set( profile_suffix "-16.11" )
+                endif()
             endif()
+
+
+            # msvc-xx.yy profile will use Ninja generator (assumes vcvars are already set)
+            # vc-xx.yy profile will use Visual Studio generator (no vcvars required - use always latest available msvc)
+
+            set( msvc_profile_name "msvc" )
+            if ( CMAKE_GENERATOR MATCHES "Visual Studio" )
+                set( msvc_profile_name "vs" )
+            endif()
+
+            list( APPEND conan_cmake_run_params PROFILE ${msvc_profile_name}-${compiler_major_version}.${compiler_minor_version}${profile_suffix} )
+
+            set( HAVE_PROFILE ON )
+        else()
+            set( profile_suffix "" )
+            if ( CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" )
+                set( profile_suffix "-arm64" )
+            endif()
+            list( APPEND conan_cmake_run_params PROFILE clang-${compiler_major_version}.${compiler_minor_version}.${compiler_bugfix_version}-windows${profile_suffix} )
         endif()
-
-
-        # msvc-xx.yy profile will use Ninja generator (assumes vcvars are already set)
-        # vc-xx.yy profile will use Visual Studio generator (no vcvars required - use always latest available msvc)
-
-        set( msvc_profile_name "msvc" )
-        if ( CMAKE_GENERATOR MATCHES "Visual Studio" )
-            set( msvc_profile_name "vs" )
-        endif()
-
-        list( APPEND conan_cmake_run_params PROFILE ${msvc_profile_name}-${compiler_major_version}.${compiler_minor_version}${profile_suffix} )
-
-        set( HAVE_PROFILE ON )
+        # if neither msvc nor clang on windows, let conan automatically detect settings
     elseif( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
         list( GET VERSION_LIST 0 compiler_major_version  )
