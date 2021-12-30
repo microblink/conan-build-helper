@@ -226,6 +226,8 @@ else() # in user space and user has not performed conan install command
                 set( msvc_profile_name "vs" )
             endif()
 
+            # Note: use $ENV{PROCESSOR_ARCHITECTURE} instead of CMAKE_SYSTEM_PROCESSOR because Intel-based cmake
+            #       could be emulated on ARM and therefore CMAKE_SYSTEM_PROCESSOR is set to AMD64 instead of ARM64
             if ( $ENV{PROCESSOR_ARCHITECTURE} STREQUAL "ARM64" )
                 set( profile_suffix "${profile_suffix}-arm64" )
             endif()
@@ -235,6 +237,8 @@ else() # in user space and user has not performed conan install command
             set( HAVE_PROFILE ON )
         else()
             set( profile_suffix "" )
+            # Note: use $ENV{PROCESSOR_ARCHITECTURE} instead of CMAKE_SYSTEM_PROCESSOR because Intel-based cmake
+            #       could be emulated on ARM and therefore CMAKE_SYSTEM_PROCESSOR is set to AMD64 instead of ARM64
             if ( $ENV{PROCESSOR_ARCHITECTURE} STREQUAL "ARM64" )
                 set( profile_suffix "-arm64" )
             endif()
