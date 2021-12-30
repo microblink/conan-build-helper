@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 # in order to be able to detect AppleClang, as opposed to Clang, we need to set this policy
 cmake_policy( SET CMP0025 NEW )
 
-enable_language( C CXX  )
+enable_language( C CXX )
 
 set( TESTING_DEFAULT OFF )
 
@@ -200,7 +200,7 @@ else() # in user space and user has not performed conan install command
         list( GET VERSION_LIST 1 compiler_minor_version )
         list( GET VERSION_LIST 2 compiler_bugfix_version )
 
-        if ( CMAKE_CXX_COMPILER_ID STREQUAL MSVC )
+        if ( CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" )
             set( profile_suffix "" )
             # handle special case for VS 16.8 and 16.9 - they both have MSVC 19.28
             if ( ${compiler_major_version} EQUAL 19 AND ${compiler_minor_version} EQUAL 28 )
@@ -226,15 +226,21 @@ else() # in user space and user has not performed conan install command
                 set( msvc_profile_name "vs" )
             endif()
 
+            if ( CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64" )
+                set( profile_suffix "${profile_suffix}-arm64" )
+            endif()
+
             list( APPEND conan_cmake_run_params PROFILE ${msvc_profile_name}-${compiler_major_version}.${compiler_minor_version}${profile_suffix} )
 
             set( HAVE_PROFILE ON )
         else()
             set( profile_suffix "" )
-            if ( CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64" )
+            if ( CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64" )
                 set( profile_suffix "-arm64" )
             endif()
             list( APPEND conan_cmake_run_params PROFILE clang-${compiler_major_version}.${compiler_minor_version}.${compiler_bugfix_version}-windows${profile_suffix} )
+
+            set( HAVE_PROFILE ON )
         endif()
         # if neither msvc nor clang on windows, let conan automatically detect settings
     elseif( CMAKE_SYSTEM_NAME STREQUAL "Linux" )
