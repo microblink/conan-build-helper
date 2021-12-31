@@ -240,6 +240,10 @@ else() # in user space and user has not performed conan install command
             endif()
             list( APPEND conan_cmake_run_params PROFILE clang-${compiler_major_version}.${compiler_minor_version}.${compiler_bugfix_version}-windows${profile_suffix} )
 
+            if ( DEFINED MB_USE_CUSTOM_STL AND NOT MB_USE_CUSTOM_STL )
+                list( APPEND conan_cmake_run_params SETTINGS compiler.libcxx=ms_stl )
+            endif()
+
             set( HAVE_PROFILE ON )
         endif()
         # if neither msvc nor clang on windows, let conan automatically detect settings
