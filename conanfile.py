@@ -197,14 +197,24 @@ class MicroblinkConanFile(object):
 
     def package_info(self):
         if self.settings.build_type == 'Debug' \
-           and not conans.tools.cross_building(self.settings) and \
-           self.settings.compiler in ['clang', 'apple-clang']:
-            # runtime checks are enabled, so we need to add ASAN/UBSAN linker flags
-            runtime_check_flags = ['-fsanitize=undefined', '-fsanitize=address']
-            if self.settings.compiler == 'clang':
-                runtime_check_flags.append('-fsanitize=integer')
-            self.cpp_info.sharedlinkflags.extend(runtime_check_flags)
-            self.cpp_info.exelinkflags.extend(runtime_check_flags)
+                and not conans.tools.cross_building(self.settings) and \
+                self.settings.compiler in ['clang', 'apple-clang']:
+            if self.settings.os == 'Windows':
+                if self.settings.compiler == 'clang' and \
+                        self.settings.arch == 'x86_64':  # sanitizers currently supported only on Intel
+                    clang_sanitizer_libs = [
+                        'clang_rt.asan_dynamic-x86_64.lib'
+                        'clang_rt.asan_dynamic_runtime_thunk-x86_64.lib'
+                    ]
+                    self.cpp_info.sharedlinkflags.extend(clang_sanitizer_libs)
+                    self.cpp_info.exelinkflags.extend(clang_sanitizer_libs)
+            else:
+                # runtime checks are enabled, so we need to add ASAN/UBSAN linker flags
+                runtime_check_flags = ['-fsanitize=undefined', '-fsanitize=address']
+                if self.settings.compiler == 'clang':
+                    runtime_check_flags.append('-fsanitize=integer')
+                self.cpp_info.sharedlinkflags.extend(runtime_check_flags)
+                self.cpp_info.exelinkflags.extend(runtime_check_flags)
 
 
 class MicroblinkRecognizerConanFile(MicroblinkConanFile):
@@ -257,4 +267,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "8.0.0"
+    version = "8.1.0"
