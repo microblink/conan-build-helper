@@ -244,6 +244,10 @@ else() # in user space and user has not performed conan install command
                 list( APPEND conan_cmake_run_params SETTINGS compiler.libcxx=ms_stl )
             endif()
 
+            if ( NOT MSVC ) # clang with GNU-like interface
+                list( APPEND conan_cmake_run_params OPTIONS llvm:use_clang_cl=False )
+            endif()
+
             set( HAVE_PROFILE ON )
         endif()
         # if neither msvc nor clang on windows, let conan automatically detect settings
