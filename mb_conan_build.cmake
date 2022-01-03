@@ -194,7 +194,7 @@ else() # in user space and user has not performed conan install command
             list( APPEND conan_cmake_run_params SETTINGS os.stl_abi=standard )
         endif()
         set( HAVE_PROFILE ON )
-    elseif( MSVC )
+    elseif( WIN32 )
         string( REPLACE "." ";" VERSION_LIST ${CMAKE_CXX_COMPILER_VERSION} )
         list( GET VERSION_LIST 0 compiler_major_version )
         list( GET VERSION_LIST 1 compiler_minor_version )
