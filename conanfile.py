@@ -159,14 +159,6 @@ class MicroblinkConanFile(object):
         self.package_public_headers()
         self.package_all_libraries()
 
-    def imports(self):
-        self.copy("*.dll", "", "bin")
-        self.copy("*.dylib", "", "lib")
-        self.copy("*.zzip", src='res', dst='')
-        self.copy("*.pod", src='res', dst='')
-        self.copy("*.strop", src='res', dst='')
-        self.copy("*.rtttl", src='res', dst='')
-
     def ignore_testing_for_package_id(self):
         del self.info.options.enable_testing
 
