@@ -38,7 +38,7 @@ class MicroblinkConanFile(object):
     def configure(self):
         # iOS and MacOS have fat binaries, so those packages don't depend on arch setting
         if self.settings.os in ['iOS', 'Macos']:
-            del self.settings.arch
+            self.settings.remove('arch')
 
     def add_base_args(self, args):
         if 'log_level' in self.options:
