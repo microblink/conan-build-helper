@@ -58,17 +58,12 @@ class MicroblinkConanFile(object):
         if 'enable_testing' in self.options:
             args.append(f'-DMB_ENABLE_TESTING={self.options.enable_testing}')
 
-    def build_with_args(self, args):
+    def build_with_args(self, args, target=None):
         # always build release, whether full release or dev-release (in debug mode)
         cmake = CMake(self, build_type='Release')
         args.append(f'-DMB_CONAN_PACKAGE_NAME={self.name}')
         if self.settings.build_type == 'Debug':
             args.extend(['-DCMAKE_BUILD_TYPE=Release', '-DMB_DEV_RELEASE=ON'])
-            # runtime checks on Android require rooted device, and on iOS special
-            # checkbox enabled that we currently do not support setting via CMake
-            # on Emscripten, it's utterly slow and does not work with SAFE_HEAP
-            if self.settings.os != 'iOS' and self.settings.os != 'Android' and self.settings.os != 'Emscripten':
-                args.append('-DMB_ENABLE_RUNTIME_CHECKS=ON')
 
         self.add_base_args(args)
         # this makes packages forward compatible with future compiler updates
@@ -88,9 +83,9 @@ class MicroblinkConanFile(object):
                     )
             else:
                 # backward compatibility with old iOS toolchain and CMakeBuild < 12.0.0
-                cmake.build()
+                cmake.build(target=target)
         else:
-            cmake.build()
+            cmake.build(target=target)
 
     def cmake_install(self):
         # always build release, whether full release or dev-release (in debug mode)
@@ -250,4 +245,4 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 
 class MicroblinkConanFilePackage(conans.ConanFile):
     name = "MicroblinkConanFile"
-    version = "8.1.0"
+    version = "8.2.1"
