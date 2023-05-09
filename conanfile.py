@@ -1,8 +1,9 @@
-import conans
-import os
+from conan import ConanFile
+from conan.tools.cmake import cmake_layout, CMake, CMakeDeps, CMakeToolchain
+from conan.tools.files import copy, join
 
 
-class CMake(conans.CMake):
+class CMakeLegacy:
     def configure(self, args=None, defs=None, source_folder=None, build_folder=None,
                   cache_build_folder=None, pkg_config_paths=None):
         env_prefix = "CONAN_CMAKE_CUSTOM_"
@@ -20,27 +21,39 @@ class CMake(conans.CMake):
         )
 
 
-class MicroblinkConanFile(object):
+class MicroblinkConanFile:
     options = {
         'log_level': ['Verbose', 'Debug', 'Info', 'WarningsAndErrors'],
         'enable_timer': [True, False],
-        'enable_testing': [True, False]
     }
     default_options = {
         'log_level': 'WarningsAndErrors',
         'enable_timer': False,
-        'enable_testing': False
     }
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake"
-    no_copy_source = True
 
-    def configure(self):
-        # iOS and MacOS have fat binaries, so those packages don't depend on arch setting
-        if self.settings.os in ['iOS', 'Macos']:
-            self.settings.remove('arch')
+    def layout(self):
+        cmake_layout(self)
 
-    def add_base_args(self, args):
+    def compatibility(self):
+        # Microblink's conan packages for Apple have universal binaries, so Mac and iOS simulator ship with both
+        # support for Apple Silicon and Intel
+        if self.settings.os == 'Macos' or (self.settings.os == 'iOS' and self.settings.os.sdk == 'iphonesimulator'):
+            return [{"settings": [("arch", a)]} for a in ("armv8", "x86_64")]
+
+    def mb_generate_with_cmake_args(self, *, cmake_args: dict = []):
+        tc = CMakeToolchain(self)
+        tc.variables.update(cmake_args)
+        tc.generate()
+
+        deps = CMakeDeps(self)
+        deps.generate()
+
+    def generate(self):
+        self.mb_generate_with_cmake_args()
+
+    # TODO: move this to log-and-timer package
+    def mb_add_base_args(self, args):
         if 'log_level' in self.options:
             if self.options.log_level == 'Verbose':
                 args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_VERBOSE')
@@ -58,14 +71,13 @@ class MicroblinkConanFile(object):
         if 'enable_testing' in self.options:
             args.append(f'-DMB_ENABLE_TESTING={self.options.enable_testing}')
 
-    def build_with_args(self, args, target=None):
-        # always build release, whether full release or dev-release (in debug mode)
-        cmake = CMake(self, build_type='Release')
+    def mb_build_with_args(self, args, target=None):
+        cmake = CMake(self)
         args.append(f'-DMB_CONAN_PACKAGE_NAME={self.name}')
-        if self.settings.build_type == 'Debug':
+        if self.settings.build_type == 'DevRelease':
             args.extend(['-DCMAKE_BUILD_TYPE=Release', '-DMB_DEV_RELEASE=ON'])
 
-        self.add_base_args(args)
+        self.mb_add_base_args(args)
         # this makes packages forward compatible with future compiler updates
         args.append('-DMB_TREAT_WARNINGS_AS_ERRORS=OFF')
         cmake.configure(args=args)
@@ -87,102 +99,93 @@ class MicroblinkConanFile(object):
         else:
             cmake.build(target=target)
 
-    def cmake_install(self):
-        # always build release, whether full release or dev-release (in debug mode)
-        cmake = CMake(self, build_type='Release')
+    def mb_cmake_install(self):
+        cmake = CMake(self)
         if self.settings.os == 'iOS':
-            if self.settings.os.sdk != None:  # noqa: E711
-                if self.settings.os.sdk == 'device':
-                    cmake.install(args=['--', '-sdk', 'iphoneos', 'ONLY_ACTIVE_ARCH=NO'])
-                elif self.settings.os.sdk == 'simulator':
-                    cmake.install(args=['--', '-sdk', 'iphonesimulator', 'ONLY_ACTIVE_ARCH=NO'])
-                elif self.settings.os.sdk == 'maccatalyst':
-                    # CMake currently does not support invoking Mac Catalyst builds
-                    self.run(
-                        "xcodebuild build -configuration Release -scheme install " +
-                        "-destination 'platform=macOS,variant=Mac Catalyst' ONLY_ACTIVE_ARCH=NO"
-                    )
-            else:
-                # backward compatibility with old iOS toolchain and CMakeBuild < 12.0.0
-                cmake.install()
+            cmake.install(args=['--', '-sdk', self.settings.os.sdk, 'ONLY_ACTIVE_ARCH=NO'])
+        elif self.settings.os == 'Macos' and self.settings.os.subsystem == 'catalyst':
+            # CMake currently does not support invoking Mac Catalyst builds
+            self.run(
+                "xcodebuild build -configuration Release -scheme install " +
+                "-destination 'platform=macOS,variant=Mac Catalyst' ONLY_ACTIVE_ARCH=NO"
+            )
         else:
             cmake.install()
 
     def build(self):
-        self.build_with_args([])
+        self.mb_build_with_args([])
 
-    def package_all_headers(self):
-        self.copy("*.h*", dst="include", src=f"{self.name}/Source")
+    def mb_package_all_headers(self):
+        copy(
+            self,
+            pattern="*.h*",
+            src=join(self.source_folder, self.name, "Source"),
+            dst=join(self.package_folder, "include"),
+            keep_path=True
+        )
 
-    def package_public_headers(self):
-        self.copy("*.h*", dst="include", src=f"{self.name}/Include")
+    def mb_package_public_headers(self):
+        copy(
+            self,
+            pattern="*.h*",
+            src=join(self.source_folder, self.name, "Include"),
+            dst=join(self.package_folder, "include"),
+            keep_path=True
+        )
 
-    def package_custom_libraries(self, libs, subfolders=['']):
+    def mb_package_custom_libraries(self, libs, subfolders=['']):
         for lib in libs:
             if self.settings.os == 'Windows':
-                self.copy(f"{lib}.lib", src="lib", dst="lib", keep_path=False)
-                self.copy(f"*{lib}.pdb", src="lib", dst="lib", keep_path=False)
-
-            if self.settings.os == 'iOS':
-                for subfolder in subfolders:
-                    if subfolder != '':
-                        prefix = f'{subfolder}/'
-                    else:
-                        prefix = ''
-                    if self.settings.os.sdk != None:  # noqa: E711
-                        if self.settings.os.sdk == 'device':
-                            self.copy(f"{prefix}Release-iphoneos/{lib}.a", dst="lib", keep_path=False)
-                        elif self.settings.os.sdk == 'simulator':
-                            self.copy(f"{prefix}Release-iphonesimulator/{lib}.a", dst="lib", keep_path=False)
-                        elif self.settings.os.sdk == 'maccatalyst':
-                            self.copy(f"{prefix}Release-maccatalyst/{lib}.a", dst="lib", keep_path=False)
-                        # Cases when add_subdirectory is used (GTest, cpuinfo)
-                        self.copy(f"{lib}.a", src='lib', dst="lib", keep_path=False)
-                    else:
-                        # First copy device-only libraries (in case fat won't exists
-                        # (i.e. CMakeBuild >= 12.0.0 is used))
-                        self.copy(f"{prefix}Release-iphoneos/{lib}.a", dst="lib", keep_path=False)
-                        # copy fat libraries if they exist (and overwrite those copied in previous step)
-                        self.copy(f"*Release/{lib}.a", dst="lib", keep_path=False)
+                copy(
+                    self,
+                    pattern=f"{lib}.lib",
+                    src=join(self.build_folder, "lib"),
+                    dst=join(self.package_folder, 'lib'),
+                    keep_path=False
+                )
+                copy(
+                    self,
+                    pattern=f"*{lib}.pdb",
+                    src=join(self.build_folder, "lib"),
+                    dst=join(self.package_folder, "lib"),
+                    keep_path=False
+                )
             else:
-                self.copy(f"{lib}.a", src='lib', dst="lib", keep_path=False)
+                copy(
+                    self,
+                    pattern=f"{lib}.a",
+                    src=join(self.build_folder, 'lib'),
+                    dst=join(self.package_folder, "lib"),
+                    keep_path=False
+                )
 
-    def package_all_libraries(self, subfolders=['']):
-        self.package_custom_libraries(['*'], subfolders)
+            # TODO: see what happens with xcode builds
+
+            # if self.settings.os == 'iOS':
+            #     for subfolder in subfolders:
+            #         if subfolder != '':
+            #             prefix = f'{subfolder}/'
+            #         else:
+            #             prefix = ''
+            #         copy(self, pattern=f"{prefix}Release-{self.settings.os.sdk}/{lib}.a", dst="lib", keep_path=False)
+            #
+            #         if self.settings.os.sdk != None:  # noqa: E711
+            #             if self.settings.os.sdk == 'device':
+            #                 self.copy(f"{prefix}Release-iphoneos/{lib}.a", dst="lib", keep_path=False)
+            #             elif self.settings.os.sdk == 'simulator':
+            #                 self.copy(f"{prefix}Release-iphonesimulator/{lib}.a", dst="lib", keep_path=False)
+            #             elif self.settings.os.sdk == 'maccatalyst':
+            #                 self.copy(f"{prefix}Release-maccatalyst/{lib}.a", dst="lib", keep_path=False)
+
+    def mb_package_all_libraries(self, subfolders=['']):
+        self.mb_package_custom_libraries(['*'], subfolders)
 
     def package(self):
-        self.package_public_headers()
-        self.package_all_libraries()
-
-    def ignore_testing_for_package_id(self):
-        del self.info.options.enable_testing
-
-    def common_settings_for_package_id(self):
-        # Conan uses semver_mode by default for all dependencies. However,
-        # we want some specific dependencies to be used in full_package mode,
-        # most notably header only libraries.
-        # Dependency user can always override this default behaviour.
-        full_package_mode_deps = {
-            'Boost',
-            'ConfigEx',
-            'Eigen',
-            'Err',
-            'Functionoid',
-            'Pimpl',
-            'RapidJSON',
-            'UTFCpp',
-            'Variant',
-            'range-v3',
-        }
-        for r in self.requires:
-            if r in full_package_mode_deps:
-                self.info.requires[r].full_package_mode()
-
-    def package_id(self):
-        self.ignore_testing_for_package_id()
-        self.common_settings_for_package_id()
+        self.mb_package_public_headers()
+        self.mb_package_all_libraries()
 
     def package_info(self):
+        # TODO: move this to CMakeBuild package
         if self.settings.build_type == 'Debug' \
                 and not conans.tools.cross_building(self.settings) and \
                 self.settings.compiler in ['clang', 'apple-clang'] and \
@@ -231,18 +234,20 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
         return cmake_args
 
     def build(self):
-        self.build_with_args(self.common_recognizer_build_args())
+        self.mb_build_with_args(self.common_recognizer_build_args())
 
     def package_id(self):
         self.common_settings_for_package_id()
 
     def package(self):
-        self.package_public_headers()
-        self.package_all_libraries()
+        self.mb_package_public_headers()
+        self.mb_package_all_libraries()
         self.copy('features_*.cmake')
         self.copy('Dictionary/Dictionaries/*.zzip', dst='res')
 
 
-class MicroblinkConanFilePackage(conans.ConanFile):
-    name = "MicroblinkConanFile"
-    version = "8.2.1"
+class MicroblinkConanFilePackage(ConanFile):
+    name = "conanfile-utils"
+    version = "0.1.0"
+
+# pylint: skip-file
