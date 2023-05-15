@@ -46,6 +46,10 @@ class MicroblinkConanFile:
 
         tc = CMakeToolchain(self)
 
+        # workaround for https://github.com/conan-io/conan/issues/13896
+        if self.settings.get_safe('compiler.libcxx') == 'libc++v2':
+            tc.blocks['android_system'].values['android_stl'] = 'c++_static'
+
         if cmake_build is not None:
             custom_cmake_options = cmake_build.conf_info.get(custom_cmake_options_key)
             tc.variables.update(custom_cmake_options)
