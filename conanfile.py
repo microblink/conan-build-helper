@@ -1,24 +1,7 @@
 from conan import ConanFile
 from conan.tools.cmake import cmake_layout, CMake, CMakeDeps, CMakeToolchain
-from conan.tools.files import copy, join
-
-
-class CMakeLegacy:
-    def configure(self, args=None, defs=None, source_folder=None, build_folder=None,
-                  cache_build_folder=None, pkg_config_paths=None):
-        env_prefix = "CONAN_CMAKE_CUSTOM_"
-        cmake_params = [
-            "-D%s=%s" % (key.replace(env_prefix, ''), value)
-            for key, value in os.environ.items() if key.startswith(env_prefix)
-        ]
-        if args is not None:
-            args.extend(cmake_params)
-        else:
-            args = cmake_params
-        super().configure(
-            args=args, defs=defs, source_folder=source_folder, build_folder=build_folder,
-            cache_build_folder=cache_build_folder, pkg_config_paths=pkg_config_paths
-        )
+from conan.tools.files import copy, load
+from os.path import join
 
 
 class MicroblinkConanFile:
@@ -31,26 +14,61 @@ class MicroblinkConanFile:
         'enable_timer': False,
     }
     settings = "os", "compiler", "build_type", "arch"
+    no_copy_source = True
+    export_sources = '*', '!test-data/*', '!.git/*'
+    package_type = 'static-library'
 
-    def layout(self):
-        cmake_layout(self)
+    # -----------------------------------------------------------------------------
+    # Now follow the mb-specific methods
+    # -----------------------------------------------------------------------------
 
-    def compatibility(self):
-        # Microblink's conan packages for Apple have universal binaries, so Mac and iOS simulator ship with both
-        # support for Apple Silicon and Intel
-        if self.settings.os == 'Macos' or (self.settings.os == 'iOS' and self.settings.os.sdk == 'iphonesimulator'):
-            return [{"settings": [("arch", a)]} for a in ("armv8", "x86_64")]
+    def mb_cmake_build_require(self, version, user_channel='microblink/stable'):
+        # need special traits for dependency on cmake-build package
+        self.requires(
+            f'cmake-build/{version}@{user_channel}',
+            headers=True,  # banned.h, disable_warnings.hpp
+            libs=False,    # nothing gets linked from cmake-build
+            build=False,   # need to use it in host context to affect cmake scripts
+            run=False,     # no binaries need running from this package
+            visible=True,  # propagate dependency downstream and allow overriding
+            transitive_headers=False,
+            transitive_libs=False,
+            test=False,
+            package_id_mode="semver_mode",
+            force=True,    # force override with this version
+            override=False,
+        )
 
     def mb_generate_with_cmake_args(self, *, cmake_args: dict = []):
+        custom_cmake_options_key = 'user.microblink.cmaketoolchain:cache_variables'
+
+        cmake_build = self.dependencies['cmake-build']
+
         tc = CMakeToolchain(self)
+
+        if cmake_build is not None:
+            custom_cmake_options = cmake_build.conf_info.get(custom_cmake_options_key)
+            tc.variables.update(custom_cmake_options)
+
+            tc.variables.update(
+                {
+                    'MB_CONAN_PACKAGE_NAME': self.name,
+                    'MB_TREAT_WARNINGS_AS_ERRORS': 'OFF',
+                }
+            )
+            if self.settings.build_type == 'DevRelease':
+                tc.variables.update(
+                    {
+                        'CMAKE_BUILD_TYPE': 'Release',
+                        'MB_DEV_RELEASE': 'ON',
+                    }
+                )
+
         tc.variables.update(cmake_args)
         tc.generate()
 
         deps = CMakeDeps(self)
         deps.generate()
-
-    def generate(self):
-        self.mb_generate_with_cmake_args()
 
     # TODO: move this to log-and-timer package
     def mb_add_base_args(self, args):
@@ -71,38 +89,31 @@ class MicroblinkConanFile:
         if 'enable_testing' in self.options:
             args.append(f'-DMB_ENABLE_TESTING={self.options.enable_testing}')
 
-    def mb_build_with_args(self, args, target=None):
+    def mb_build_target(self, target=None):
         cmake = CMake(self)
-        args.append(f'-DMB_CONAN_PACKAGE_NAME={self.name}')
-        if self.settings.build_type == 'DevRelease':
-            args.extend(['-DCMAKE_BUILD_TYPE=Release', '-DMB_DEV_RELEASE=ON'])
+        cmake.configure()
 
-        self.mb_add_base_args(args)
-        # this makes packages forward compatible with future compiler updates
-        args.append('-DMB_TREAT_WARNINGS_AS_ERRORS=OFF')
-        cmake.configure(args=args)
         if self.settings.os == 'iOS':
-            if self.settings.os.sdk != None:  # noqa: E711
-                if self.settings.os.sdk == 'device':
-                    cmake.build(args=['--', '-sdk', 'iphoneos', 'ONLY_ACTIVE_ARCH=NO'])
-                elif self.settings.os.sdk == 'simulator':
-                    cmake.build(args=['--', '-sdk', 'iphonesimulator', 'ONLY_ACTIVE_ARCH=NO'])
-                elif self.settings.os.sdk == 'maccatalyst':
-                    # CMake currently does not support invoking Mac Catalyst builds
-                    self.run(
-                        "xcodebuild build -configuration Release -scheme ALL_BUILD " +
-                        "-destination 'platform=macOS,variant=Mac Catalyst' ONLY_ACTIVE_ARCH=NO"
-                    )
-            else:
-                # backward compatibility with old iOS toolchain and CMakeBuild < 12.0.0
-                cmake.build(target=target)
+            cmake.build(target=target, build_tool_args=['-sdk', self.settings.os.sdk, 'ONLY_ACTIVE_ARCH=NO'])
+        elif self.settings.os == 'Macos' and self.settings.os.subsystem == 'catalyst':
+            # CMake currently does not support invoking Mac Catalyst builds
+            if target is None:
+                target = 'ALL_BUILD'
+            self.run(
+                f"xcodebuild build -configuration Release -scheme {target} " +
+                "-destination 'platform=macOS,variant=Mac Catalyst' ONLY_ACTIVE_ARCH=NO"
+            )
         else:
             cmake.build(target=target)
 
     def mb_cmake_install(self):
         cmake = CMake(self)
         if self.settings.os == 'iOS':
-            cmake.install(args=['--', '-sdk', self.settings.os.sdk, 'ONLY_ACTIVE_ARCH=NO'])
+            # cmake.install in conan v2 does not support build_tool_args, like cmake.build
+            self.run(
+                "xcodebuild build -configuration Release -scheme install " +
+                f"-sdk {self.settings.os.sdk} ONLY_ACTIVE_ARCH=NO"
+            )
         elif self.settings.os == 'Macos' and self.settings.os.subsystem == 'catalyst':
             # CMake currently does not support invoking Mac Catalyst builds
             self.run(
@@ -112,8 +123,10 @@ class MicroblinkConanFile:
         else:
             cmake.install()
 
-    def build(self):
-        self.mb_build_with_args([])
+    def mb_testing_enabled(self):
+        # NOTE: skip_test off by default, can be enabled with '-c tools.build:skip_test=True' when invoking conan
+        skip_test = self.conf.get('tools.build:skip_test', default=False)
+        return not skip_test
 
     def mb_package_all_headers(self):
         copy(
@@ -180,22 +193,42 @@ class MicroblinkConanFile:
     def mb_package_all_libraries(self, subfolders=['']):
         self.mb_package_custom_libraries(['*'], subfolders)
 
-    def package(self):
-        self.mb_package_public_headers()
-        self.mb_package_all_libraries()
+    def mb_define_apple_universal_binary(self):
+        if self.settings.os == 'Macos' or (self.settings.os == 'iOS' and self.settings.os.sdk == 'iphonesimulator'):
+            cmake_generator = self.conf.get('tools.cmake.cmaketoolchain:generator', default='Xcode')
+            if cmake_generator == 'Xcode':
+                self.info.settings.arch = 'universal'
 
-    def package_info(self):
-        # TODO: move this to CMakeBuild package
-        if self.settings.build_type == 'Debug' \
-                and not conans.tools.cross_building(self.settings) and \
-                self.settings.compiler in ['clang', 'apple-clang'] and \
-                self.settings.os != 'Windows':
-            # runtime checks are enabled, so we need to add ASAN/UBSAN linker flags
-            runtime_check_flags = ['-fsanitize=undefined', '-fsanitize=address']
-            if self.settings.compiler == 'clang':
-                runtime_check_flags.append('-fsanitize=integer')
-            self.cpp_info.sharedlinkflags.extend(runtime_check_flags)
-            self.cpp_info.exelinkflags.extend(runtime_check_flags)
+    # -----------------------------------------------------------------------------
+    # Now follow the default implementations of conan methods (no mb_ prefix)
+    # -----------------------------------------------------------------------------
+
+    def set_version(self):
+        """Automatically parse version from README.md"""
+
+        if self.version is None:
+            # load the version from README.md
+            readme = load(self, 'README.md')
+            assert readme is not None
+            regex = r"^##\s+(\d+.\d+.\d)+\s+$"
+            import re
+            matches = re.finditer(regex, readme)
+            self.version = matches[0][0]
+
+    def layout(self):
+        cmake_layout(self)
+
+    def generate(self):
+        self.mb_generate_with_cmake_args()
+
+    def build(self):
+        self.mb_build_target()
+
+    def package(self):
+        self.mb_cmake_install()
+
+    def package_id(self):
+        self.mb_define_apple_universal_binary()
 
 
 class MicroblinkRecognizerConanFile(MicroblinkConanFile):
@@ -208,7 +241,7 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
     }
 
     def init(self):
-        base = self.python_requires['MicroblinkConanFile'].module.MicroblinkConanFile
+        base = self.python_requires['conanfile-utils'].module.MicroblinkConanFile
         self.options.update(base.options)
         self.default_options.update(base.default_options)
 
@@ -225,19 +258,15 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
         self.options['*'].binary_serialization = self.options.binary_serialization
         self.options['*'].enable_testing = self.options.enable_testing
 
-    def common_recognizer_build_args(self):
-        cmake_args = [
-            f'-DRecognizer_RESULT_JSONIZATION={self.options.result_jsonization}',
-            f'-DRecognizer_BINARY_SERIALIZATION={self.options.binary_serialization}',
-            f'-DMB_ENABLE_TESTING={self.options.enable_testing}'
-        ]
+    def mb_common_recognizer_generate_args(self):
+        cmake_args = {
+            'Recognizer_RESULT_JSONIZATION': self.options.result_jsonization,
+            'Recognizer_BINARY_SERIALIZATION': self.options.binary_serialization,
+        }
         return cmake_args
 
-    def build(self):
-        self.mb_build_with_args(self.common_recognizer_build_args())
-
-    def package_id(self):
-        self.common_settings_for_package_id()
+    def generate(self):
+        self.mb_generate_with_cmake_args(self.mb_common_recognizer_generate_args())
 
     def package(self):
         self.mb_package_public_headers()
@@ -249,5 +278,6 @@ class MicroblinkRecognizerConanFile(MicroblinkConanFile):
 class MicroblinkConanFilePackage(ConanFile):
     name = "conanfile-utils"
     version = "0.1.0"
+    package_type = 'python-require'
 
 # pylint: skip-file
