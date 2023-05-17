@@ -201,7 +201,7 @@ class MicroblinkConanFile:
             self.version = matches[0][0]
 
     def layout(self):
-        cmake_layout(self)
+        cmake_layout(self, src_folder='src')
 
     def generate(self):
         self.mb_generate_with_cmake_args()
