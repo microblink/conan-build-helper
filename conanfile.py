@@ -5,14 +5,14 @@ from os.path import join
 
 
 class MicroblinkConanFile:
-    options = {
-        'log_level': ['Verbose', 'Debug', 'Info', 'WarningsAndErrors'],
-        'enable_timer': [True, False],
-    }
-    default_options = {
-        'log_level': 'WarningsAndErrors',
-        'enable_timer': False,
-    }
+    # options = {
+    #     'log_level': ['Verbose', 'Debug', 'Info', 'WarningsAndErrors'],
+    #     'enable_timer': [True, False],
+    # }
+    # default_options = {
+    #     'log_level': 'WarningsAndErrors',
+    #     'enable_timer': False,
+    # }
     settings = "os", "compiler", "build_type", "arch"
     no_copy_source = True
     export_sources = '*', '!test-data/*', '!.git/*'
@@ -21,23 +21,6 @@ class MicroblinkConanFile:
     # -----------------------------------------------------------------------------
     # Now follow the mb-specific methods
     # -----------------------------------------------------------------------------
-
-    def mb_cmake_build_require(self, version, user_channel='microblink/stable'):
-        # need special traits for dependency on cmake-build package
-        self.requires(
-            f'cmake-build/{version}@{user_channel}',
-            headers=True,  # banned.h, disable_warnings.hpp
-            libs=False,    # nothing gets linked from cmake-build
-            build=False,   # need to use it in host context to affect cmake scripts
-            run=False,     # no binaries need running from this package
-            visible=True,  # propagate dependency downstream and allow overriding
-            transitive_headers=False,
-            transitive_libs=False,
-            test=False,
-            package_id_mode="semver_mode",
-            force=True,    # force override with this version
-            override=False,
-        )
 
     def mb_generate_with_cmake_args(self, *, cmake_args: dict = []):
         custom_cmake_options_key = 'user.microblink.cmaketoolchain:cache_variables'
@@ -68,27 +51,29 @@ class MicroblinkConanFile:
         tc.generate()
 
         deps = CMakeDeps(self)
+        if self.settings.build_type == 'DevRelease':
+            deps.configuration = 'Release'
         deps.generate()
 
     # TODO: move this to log-and-timer package
-    def mb_add_base_args(self, args):
-        if 'log_level' in self.options:
-            if self.options.log_level == 'Verbose':
-                args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_VERBOSE')
-            elif self.options.log_level == 'Debug':
-                args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_DEBUG')
-            elif self.options.log_level == 'Info':
-                args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_INFO')
-            elif self.options.log_level == 'WarningsAndErrors':
-                args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_WARNINGS_AND_ERRORS')
-
-        if 'enable_timer' in self.options:
-            if self.options.enable_timer:
-                args.append('-DMB_GLOBAL_ENABLE_TIMER=ON')
-
-        if 'enable_testing' in self.options:
-            args.append(f'-DMB_ENABLE_TESTING={self.options.enable_testing}')
-
+    # def mb_add_base_args(self, args):
+    #     if 'log_level' in self.options:
+    #         if self.options.log_level == 'Verbose':
+    #             args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_VERBOSE')
+    #         elif self.options.log_level == 'Debug':
+    #             args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_DEBUG')
+    #         elif self.options.log_level == 'Info':
+    #             args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_INFO')
+    #         elif self.options.log_level == 'WarningsAndErrors':
+    #             args.append('-DMB_GLOBAL_LOG_LEVEL=LOG_WARNINGS_AND_ERRORS')
+    #
+    #     if 'enable_timer' in self.options:
+    #         if self.options.enable_timer:
+    #             args.append('-DMB_GLOBAL_ENABLE_TIMER=ON')
+    #
+    #     if 'enable_testing' in self.options:
+    #         args.append(f'-DMB_ENABLE_TESTING={self.options.enable_testing}')
+    #
     def mb_build_target(self, target=None):
         cmake = CMake(self)
         cmake.configure()
