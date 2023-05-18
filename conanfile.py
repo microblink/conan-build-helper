@@ -39,20 +39,11 @@ class MicroblinkConanFile:
                     'MB_TREAT_WARNINGS_AS_ERRORS': 'OFF',
                 }
             )
-            if self.settings.build_type == 'DevRelease':
-                tc.variables.update(
-                    {
-                        'CMAKE_BUILD_TYPE': 'Release',
-                        'MB_DEV_RELEASE': 'ON',
-                    }
-                )
 
         tc.variables.update(cmake_args)
         tc.generate()
 
         deps = CMakeDeps(self)
-        if self.settings.build_type == 'DevRelease':
-            deps.configuration = 'Release'
         deps.generate()
 
     # TODO: move this to log-and-timer package
