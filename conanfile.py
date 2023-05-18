@@ -22,7 +22,7 @@ class MicroblinkConanFile:
     # Now follow the mb-specific methods
     # -----------------------------------------------------------------------------
 
-    def mb_generate_with_cmake_args(self, *, cmake_args: dict = []):
+    def mb_generate_with_cmake_args(self, cmake_args: dict = []):
         custom_cmake_options_key = 'user.microblink.cmaketoolchain:cache_variables'
 
         cmake_build = self.dependencies['cmake-build']
@@ -179,7 +179,8 @@ class MicroblinkConanFile:
         self.mb_package_custom_libraries(['*'], subfolders)
 
     def mb_define_apple_universal_binary(self):
-        if self.settings.os == 'Macos' or (self.settings.os == 'iOS' and self.settings.os.sdk == 'iphonesimulator'):
+        if self.info.settings.os == 'Macos' or \
+                (self.info.settings.os == 'iOS' and self.info.settings.os.sdk == 'iphonesimulator'):
             cmake_generator = self.conf.get('tools.cmake.cmaketoolchain:generator', default='Xcode')
             if cmake_generator == 'Xcode':
                 self.info.settings.arch = 'universal'
@@ -193,15 +194,16 @@ class MicroblinkConanFile:
 
         if self.version is None:
             # load the version from README.md
-            readme = load(self, 'README.md')
+            readme = load(self, join(self.recipe_folder, 'README.md'))
             assert readme is not None
             regex = r"^##\s+(\d+.\d+.\d)+\s+$"
             import re
-            matches = re.finditer(regex, readme)
-            self.version = matches[0][0]
+            version_match = re.search(regex, readme, re.MULTILINE)
+            assert version_match is not None
+            self.version = version_match.group(1)
 
     def layout(self):
-        cmake_layout(self, src_folder='src')
+        cmake_layout(self)
 
     def generate(self):
         self.mb_generate_with_cmake_args()
